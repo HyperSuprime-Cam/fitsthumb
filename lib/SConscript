@@ -1,0 +1,11 @@
+# -*- python -*-
+#
+#
+Import("env")
+import glob, os
+
+env.SharedLibrary(
+    'fitsthumb', glob.glob('../src/*.cc'), LIBS=filter(lambda p: p != "fitsthumb", env.getlibs("fitsthumb"))
+)
+
+env.Append(CPPPATH = ['#include/hsc/onsite/qa'])

@@ -1,0 +1,11 @@
+syntax: glob
+*~
+*.pyo
+*.pyc
+*.o
+*.so
+*.dylib
+*.os
+*.la
+*.a
+*.fits

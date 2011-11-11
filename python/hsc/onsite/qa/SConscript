@@ -1,0 +1,10 @@
+# -*- python -*-
+import re
+Import("env")
+
+env.CheckSwig("python", ilang="c++", includedProducts="fitsthumb")
+env.LoadableModuleIncomplete("_fitsthumb", Split("fitsthumb.i"),
+                             CCFLAGS=re.sub("-Wall", "", " ".join(env['CCFLAGS'])),
+                             LIBS=env.getlibs("fitsthumb"))
+#env.Append(CPPPATH = ['#python/hsc/onsite/qa'])
+
