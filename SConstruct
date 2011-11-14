@@ -15,19 +15,23 @@ env = scons.makeEnv(
     "fitsthumb",
 #    "hg",
     r"$HeadURL: FILL IN PATH /fitsthumb/trunk/SConstruct $",
-    [
-        ["python", "Python.h"],
-        ["cfitsio", "fitsio.h", "libcfitsio.a"],        
-    ],
+    scons.ConfigureDependentProducts("fitsthumb"),
+#    [
+#        ["python", "Python.h"],
+#        ["cfitsio", "fitsio.h", "libcfitsio.a"],        
+#        ["afw", "lsst/afw/image/MaskedImage.h", "afw"],
+#    ],
 )
 
 env.libs["fitsthumb"] += env.getlibs("")
 # FH:
-#  Currently, cfitsio is static linked and the below line is unnecessary.
+#  Currently, cfitsio is static linked.
 #env.libs["fitsthumb"] += env.getlibs("cfitsio") 
 #  Other linked libraries (exept gcc cores) are /usr/lib64/libjpeg.so,/usr/lib64/libpng12.so,/lib64/libz.so
 #  See $ ldd _fitsThumb.so 
 env.libs['fitsthumb'] += [ 'jpeg', 'png', 'z', 'cfitsio']
+env.libs["fitsthumb"] += env.getlibs("afw")
+#env.libs["fitsthumb"] += env.getlibs("libcfitsio.a")
 #env.libs["hscdistest"] += env.getlibs("")
 #env.libs["hscdistest"] += env.getlibs("gsl gslcblas afw daf_base")
 #env.libs["hscdistest"] += env.getlibs("pex_exceptions afw boost utils daf_base daf_data daf_persistence pex_logging pex_policy security")
