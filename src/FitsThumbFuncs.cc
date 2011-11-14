@@ -5,7 +5,7 @@
 #include "CommandLine.h"
 #include "FitsThumbFuncs.h"
 //#include "lsst/afw/image/Image.h"
-
+// 'fitmb::Ptr< fitmb::C2DArray< float > > *',
 #include <cstdio>
 
 //namespace afwImage = lsst::afw::image;
@@ -72,6 +72,8 @@ int hsc::onsite::qa::createFitsThumb(const char *inputFile, const char * outputF
 			outputFile ? outputFile : inputFile,
 			! outputFile
 		);
+                Del(pDest);
+
 	}
 	catch(std::exception& e){
 		std::fprintf(stdout, "error: %s\n", e.what());
@@ -135,6 +137,9 @@ int hsc::onsite::qa::createFitsThumb(lsst::afw::image::Image<float>::Ptr &image,
             outputFile,
             ! outputFile
             );
+
+        // FH
+        Del(pDest);
     }
     catch(std::exception& e){
         std::fprintf(stdout, "error: %s\n", e.what());
