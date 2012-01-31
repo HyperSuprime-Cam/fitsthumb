@@ -1,11 +1,11 @@
-%module fitsthumb
+//%module fitsthumb
 %{
-#include "ZScale.h"
-#include "InFITS.h"
-#include "Output.h"
-#include "Resize.h"
-#include "CommandLine.h"
-#include "FitsThumbFuncs.h"
+#include "hsc/onsite/qa/fitsthumb/ZScale.h"
+#include "hsc/onsite/qa/fitsthumb/InFITS.h"
+#include "hsc/onsite/qa/fitsthumb/Output.h"
+#include "hsc/onsite/qa/fitsthumb/Resize.h"
+#include "hsc/onsite/qa/fitsthumb/CommandLine.h"
+#include "hsc/onsite/qa/fitsthumb/FitsThumbFuncs.h"
 #include <cstdio>
 %}
 
@@ -16,13 +16,17 @@
 //%declareNumPyConverters(lsst::afw::image::ImageBase<PIXEL_TYPE>::Array);
 //%declareNumPyConverters(lsst::afw::image::ImageBase<PIXEL_TYPE>::ConstArray);
 // %enddef
+%{
+%}
 
+%include "hsc/onsite/qa/fitsthumb/FitsThumbFuncs.h"
 
-%include "FitsThumbFuncs.h"
 //namespace hsc {
 //namespace onsite {
 //namespace qa {
+//namespace fitsthumb {
 //   int createFitsThumb(char *input, char *output, char *outtype, float width, float height, bool dynamicRangeFirst);
+//}
 //}
 //}
 //}

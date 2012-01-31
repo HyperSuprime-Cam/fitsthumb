@@ -1,0 +1,1 @@
+from fitsthumbLib import *

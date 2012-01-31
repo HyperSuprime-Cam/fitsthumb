@@ -1,9 +1,9 @@
-#include "ZScale.h"
-#include "InFITS.h"
-#include "Output.h"
-#include "Resize.h"
-#include "CommandLine.h"
-#include "FitsThumbFuncs.h"
+#include "hsc/onsite/qa/fitsthumb/ZScale.h"
+#include "hsc/onsite/qa/fitsthumb/InFITS.h"
+#include "hsc/onsite/qa/fitsthumb/Output.h"
+#include "hsc/onsite/qa/fitsthumb/Resize.h"
+#include "hsc/onsite/qa/fitsthumb/CommandLine.h"
+#include "hsc/onsite/qa/fitsthumb/FitsThumbFuncs.h"
 //#include "lsst/afw/image/Image.h"
 // 'fitmb::Ptr< fitmb::C2DArray< float > > *',
 #include <cstdio>
@@ -13,8 +13,8 @@
 //typedef afwImage::Image<float> ImageF;
 
 // Input is file path to FITS image file
-int hsc::onsite::qa::createFitsThumb(const char *inputFile, const char * outputFile, const char* outputType = "png", int width = 0, int height = 0, bool dynamicRangeFirst = true)
-//int hsc::onsite::qa::createFitsThumb(const char *inputFile, const char * outputFile, const char* outputType, int width, int height, bool dynamicRangeFirst) 
+int hsc::onsite::qa::fitsthumb::createFitsThumb(const char *inputFile, const char * outputFile, const char* outputType = "png", int width = 0, int height = 0, bool dynamicRangeFirst = true)
+//int hsc::onsite::qa::fitsthumb::createFitsThumb(const char *inputFile, const char * outputFile, const char* outputType, int width, int height, bool dynamicRangeFirst) 
 {
 	using namespace fitmb;
 	using namespace std;
@@ -85,7 +85,7 @@ int hsc::onsite::qa::createFitsThumb(const char *inputFile, const char * outputF
 
 
 // Input is afw.Image object
-int hsc::onsite::qa::createFitsThumb(lsst::afw::image::Image<float>::Ptr &image, const char *outputFile, const char* outputType = "png", int width = 0, int height = 0, bool dynamicRangeFirst = true)
+int hsc::onsite::qa::fitsthumb::createFitsThumb(lsst::afw::image::Image<float>::Ptr &image, const char *outputFile, const char* outputType = "png", int width = 0, int height = 0, bool dynamicRangeFirst = true)
 {
 
     using namespace fitmb;
@@ -94,7 +94,9 @@ int hsc::onsite::qa::createFitsThumb(lsst::afw::image::Image<float>::Ptr &image,
     // Starting image conversion
     try{
         // preparing pixel data
-        Ptr<C2DArray<float> > pSrc = hsc::onsite::qa::convertImageToC2dArray(image);
+        Ptr<C2DArray<float> > pSrc = hsc::onsite::qa::fitsthumb::convertImageToC2dArray(image);
+        //Ptr<C2DArray<float> > pSrc;
+
         Ptr<C2DArray<uint8> > pDest;
 
         if(width <= 0 && height <= 0){
@@ -149,8 +151,7 @@ int hsc::onsite::qa::createFitsThumb(lsst::afw::image::Image<float>::Ptr &image,
     return 0;
 }
 
-
-fitmb::Ptr< fitmb::C2DArray<float> > hsc::onsite::qa::convertImageToC2dArray(lsst::afw::image::Image<float>::Ptr &image)
+fitmb::Ptr< fitmb::C2DArray<float> > hsc::onsite::qa::fitsthumb::convertImageToC2dArray(lsst::afw::image::Image<float>::Ptr &image)
 {
     using namespace fitmb;
     using namespace std;
@@ -177,4 +178,3 @@ fitmb::Ptr< fitmb::C2DArray<float> > hsc::onsite::qa::convertImageToC2dArray(lss
     return imageArray;
 
 }
-

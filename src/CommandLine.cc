@@ -1,4 +1,4 @@
-#include "CommandLine.h"
+#include "hsc/onsite/qa/fitsthumb/CommandLine.h"
 #include <stdio.h>
 #include <string.h>
 
