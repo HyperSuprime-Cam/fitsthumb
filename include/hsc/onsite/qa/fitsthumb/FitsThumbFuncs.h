@@ -1,7 +1,8 @@
 //#ifndef fitsThumbFuncs_hpp__
 //#define fitsThumbFuncs_hpp__
 
-#include "lsst/afw/image/MaskedImage.h"
+#include "lsst/afw.h"
+//#include "lsst/afw/image/MaskedImage.h"
 
 namespace hsc {
     namespace  onsite {

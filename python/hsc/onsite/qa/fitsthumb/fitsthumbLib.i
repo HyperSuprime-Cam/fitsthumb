@@ -9,7 +9,9 @@ Python interface to hsc::onsite::qa::fitsthumb
 %module(package="hsc.onsite.qa.fitsthumb", docstring=fitsthumbLib_DOCSTRING) fitsthumbLib
 
 %{
-#include "lsst/afw/image.h"
+//#include "lsst/afw/image.h"
+#include "lsst/afw.h"
+#include "lsst/pex/logging.h"
 %}
 
 %include "lsst/p_lsstSwig.i"
