@@ -9,3 +9,12 @@ syntax: glob
 *.la
 *.a
 *.fits
+
+.sconf_temp
+.sconsign.dblite
+config.log
+*.cfgc
+
+python/hsc/onsite/qa/fitsthumb/fitsthumbLib.py
+*_wrap.cc
+python/hsc/onsite/qa/fitsthumb/version.py
