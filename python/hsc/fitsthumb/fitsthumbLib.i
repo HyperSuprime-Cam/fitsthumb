@@ -1,12 +1,12 @@
 // -*- lsst-c++ -*-
 %define fitsthumbLib_DOCSTRING
 "
-Python interface to hsc::onsite::qa::fitsthumb
+Python interface to hsc::fitsthumb
 "
 %enddef
 
 %feature("autodoc", "1");
-%module(package="hsc.onsite.qa.fitsthumb", docstring=fitsthumbLib_DOCSTRING) fitsthumbLib
+%module(package="hsc.fitsthumb", docstring=fitsthumbLib_DOCSTRING) fitsthumbLib
 
 %{
 #include "lsst/afw.h"
@@ -20,14 +20,14 @@ Python interface to hsc::onsite::qa::fitsthumb
 %import "lsst/afw/cameraGeom/cameraGeomLib.i"
 
 %{
-#include "hsc/onsite/qa/fitsthumb/ZScale.h"
-#include "hsc/onsite/qa/fitsthumb/InFITS.h"
-#include "hsc/onsite/qa/fitsthumb/Output.h"
-#include "hsc/onsite/qa/fitsthumb/Resize.h"
-#include "hsc/onsite/qa/fitsthumb/CommandLine.h"
-#include "hsc/onsite/qa/fitsthumb/FitsThumbFuncs.h"
+#include "hsc/fitsthumb/ZScale.h"
+#include "hsc/fitsthumb/InFITS.h"
+#include "hsc/fitsthumb/Output.h"
+#include "hsc/fitsthumb/Resize.h"
+#include "hsc/fitsthumb/CommandLine.h"
+#include "hsc/fitsthumb/FitsThumbFuncs.h"
 #include <cstdio>
 %}
 
-%include "hsc/onsite/qa/fitsthumb/FitsThumbFuncs.h"
+%include "hsc/fitsthumb/FitsThumbFuncs.h"
 

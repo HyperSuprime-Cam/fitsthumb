@@ -1,7 +1,7 @@
-#include "hsc/onsite/qa/fitsthumb/Output.h"
-#include "hsc/onsite/qa/fitsthumb/OutBMP.h"
-#include "hsc/onsite/qa/fitsthumb/OutJPG.h"
-#include "hsc/onsite/qa/fitsthumb/OutPNG.h"
+#include "hsc/fitsthumb/Output.h"
+#include "hsc/fitsthumb/OutBMP.h"
+#include "hsc/fitsthumb/OutJPG.h"
+#include "hsc/fitsthumb/OutPNG.h"
 
 #include <string>
 

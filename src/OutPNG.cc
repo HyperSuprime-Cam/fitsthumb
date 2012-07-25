@@ -1,4 +1,4 @@
-#include "hsc/onsite/qa/fitsthumb/OutPNG.h"
+#include "hsc/fitsthumb/OutPNG.h"
 
 #include <cstdio>
 

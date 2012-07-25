@@ -15,6 +15,6 @@ syntax: glob
 config.log
 *.cfgc
 
-python/hsc/onsite/qa/fitsthumb/fitsthumbLib.py
+python/hsc/fitsthumb/fitsthumbLib.py
 *_wrap.cc
-python/hsc/onsite/qa/fitsthumb/version.py
+python/hsc/fitsthumb/version.py
