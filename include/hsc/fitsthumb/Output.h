@@ -10,21 +10,21 @@ namespace fitmb
 
 void
 Output(
-	const C2DArray<uint8>& image,
-	const char* szOutType,
-	const char* szFile,
-	bool bAppendExtension
+    const C2DArray<uint8>& image,
+    const char* szOutType,
+    const char* szFile,
+    bool bAppendExtension
 );
 
 template <class T>
 void
 Output(
-	const C2DArray<T>& image,
-	const char* szOutType,
-	const char* szFile,
-	bool bAppendExtension
+    const C2DArray<T>& image,
+    const char* szOutType,
+    const char* szFile,
+    bool bAppendExtension
 ){
-	Output(*ToUInt8(image), szOutType, szFile, bAppendExtension);
+    Output(*ToUInt8(image), szOutType, szFile, bAppendExtension);
 }
 
 } // namespace fitmb

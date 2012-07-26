@@ -6,9 +6,9 @@
 #include <fitsio.h> // cfitsio header
 
 #ifdef NDEBUG
-#	pragma comment(lib, "cfitsio.lib")
+#   pragma comment(lib, "cfitsio.lib")
 #else
-#	pragma comment(lib, "cfitsiod.lib")
+#   pragma comment(lib, "cfitsiod.lib")
 #endif
 
 
@@ -33,50 +33,50 @@ template <class T>
 Ptr<C2DArray<T> >
 InFITS(const char* szFile)
 {
-	int status = 0;
-	fitsfile* f;
-	fits_open_file(&f, szFile, READONLY, &status);
-	if(status != 0){
-		throw std::runtime_error(MSG(szFile << " cannot be opened."));
-	}
+    int status = 0;
+    fitsfile* f;
+    fits_open_file(&f, szFile, READONLY, &status);
+    if(status != 0){
+        throw std::runtime_error(MSG(szFile << " cannot be opened."));
+    }
 
-	long naxis[2];
-	int num = 0;
-	fits_read_keys_lng(f, "NAXIS", 1, 2, naxis, &num, &status);
-	if(num != 2){
-		status = 0;
-		fits_close_file(f, &status);
-		throw std::runtime_error(MSG(szFile << ": is not a 2-dimensional image."));
-	}
+    long naxis[2];
+    int num = 0;
+    fits_read_keys_lng(f, "NAXIS", 1, 2, naxis, &num, &status);
+    if(num != 2){
+        status = 0;
+        fits_close_file(f, &status);
+        throw std::runtime_error(MSG(szFile << ": is not a 2-dimensional image."));
+    }
 
-	int width  = naxis[0];
-	int height = naxis[1];
+    int width  = naxis[0];
+    int height = naxis[1];
 
-	Ptr<C2DArray<T> > pImage (new C2DArray<T>(width, height));
-	pImage->resize(width * height);
+    Ptr<C2DArray<T> > pImage (new C2DArray<T>(width, height));
+    pImage->resize(width * height);
 
-	int anynul;
-	fits_read_img
-	(	f
-	,	_CFitsioType<T>::v
-	,	1
-	,	width*height
-	,	0
-	,	pImage->ptr()
-	,	&anynul
-	,	&status
-	);
+    int anynul;
+    fits_read_img
+    (   f
+    ,   _CFitsioType<T>::v
+    ,   1
+    ,   width*height
+    ,   0
+    ,   pImage->ptr()
+    ,   &anynul
+    ,   &status
+    );
 
-	if(status != 0){
-		status = 0;
-		fits_close_file(f, &status);
-		throw std::runtime_error(MSG(szFile << ": read error."));
-	}
+    if(status != 0){
+        status = 0;
+        fits_close_file(f, &status);
+        throw std::runtime_error(MSG(szFile << ": read error."));
+    }
 
-	status = 0;
-	fits_close_file(f, &status);
+    status = 0;
+    fits_close_file(f, &status);
 
-	return pImage;
+    return pImage;
 }
 
 } // namespace fitmb
