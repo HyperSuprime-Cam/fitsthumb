@@ -12,8 +12,6 @@ class C2DArray
     : public std::vector<T>
 {
 public:
-    virtual ~C2DArray(){}
-
     C2DArray(): w_(0), h_(0) {}
     C2DArray(int w, int h)
         : w_(w), h_(h)
