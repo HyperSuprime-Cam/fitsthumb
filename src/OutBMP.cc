@@ -36,7 +36,7 @@ struct SBitMapInfoHeader
 void
 OutBMP(
 	const C2DArray<uint8>& image,
-	const char*                    szFile
+	const char*            szFile
 ){
 	SBitMapFileHeader fh = {};
 	SBitMapInfoHeader ih = {};
@@ -58,8 +58,8 @@ OutBMP(
 	fh.bfOffBits = sizeof(fh) + sizeof(ih) + sizeof(palette);
 	fh.bfSize = fh.bfOffBits + cbLine * image.height();
 
-	std::FILE* f = std::fopen(szFile, "wb");
-	if(! f){
+	File f(std::fopen(szFile, "wb"));
+	if(! f.get()){
 		throw CException("OutBMP: ", szFile, " が開けない");
 	}
 
@@ -70,28 +70,19 @@ OutBMP(
 		throw CException("OutBMP: ", szFile, ": 書き込みエラー"); \
 	}
 
-	try{
-		BMP_FWRITE(&fh    , sizeof(fh),   1, f);
-		BMP_FWRITE(&ih    , sizeof(ih),   1, f);
-		BMP_FWRITE(palette, 4         , 256, f);
+    BMP_FWRITE(&fh    , sizeof(fh),   1, f.get());
+    BMP_FWRITE(&ih    , sizeof(ih),   1, f.get());
+    BMP_FWRITE(palette, 4         , 256, f.get());
 
-		// fits は bmp と同じく下から上の順に格納されているので
-		// 他のように逆順に出力しなくていい
-		uint8* p = image.ptr();
-		for(int i = image.height(); i > 0; --i){
-			BMP_FWRITE(p, 1, image.width(), f);
-			if(cbPad > 0){ uint32 pad = 0; BMP_FWRITE(&pad, 1, cbPad, f); }
-			p += image.width();
-		}
-	}
-	catch(...){
-		std::fclose(f);
-		throw;
-	}
-
-	std::fclose(f);
+    // fits は bmp と同じく下から上の順に格納されているので
+    // 他のように逆順に出力しなくていい
+    uint8* p = image.ptr();
+    for(int i = image.height(); i > 0; --i){
+        BMP_FWRITE(p, 1, image.width(), f.get());
+        if(cbPad > 0){ uint32 pad = 0; BMP_FWRITE(&pad, 1, cbPad, f.get()); }
+        p += image.width();
+    }
 }
-
 
 
 } // namespace fitmb

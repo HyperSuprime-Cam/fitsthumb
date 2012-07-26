@@ -33,12 +33,12 @@ OutJPG(
 	jcom.err = jpeg_std_error(&jerr);
 	jpeg_create_compress(&jcom);
 
-	std::FILE* f = std::fopen(szFile, "wb");
-	if(! f){
+	File f(std::fopen(szFile, "wb"));
+	if(! f.get()){
 		throw CException("OutJPG: ", szFile, " が開けない");
 	}
 
-	jpeg_stdio_dest(&jcom, f);
+	jpeg_stdio_dest(&jcom, f.get());
 
 	jcom.image_width  = image.width();
 	jcom.image_height = image.height();
@@ -57,7 +57,6 @@ OutJPG(
 
 	// 終了
 	jpeg_destroy_compress(&jcom);
-	std::fclose(f);
 }
 
 } // namespace fitmb

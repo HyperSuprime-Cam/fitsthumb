@@ -30,8 +30,8 @@ OutPNG(
 		vRows.push_back(pRow);
 	}
 
-	std::FILE* f = std::fopen(szFile, "wb");
-	if(! f){
+	File f(std::fopen(szFile, "wb"));
+	if(! f.get()){
 		throw CException("OutPNG: ", szFile, " が開けない");
 	}
 
@@ -49,7 +49,7 @@ OutPNG(
 			": png_create_info_struct 失敗");
 	}
 
-	png_init_io(ps, f);
+	png_init_io(ps, f.get());
 
 	png_set_IHDR(
 		ps, pi,
@@ -64,7 +64,6 @@ OutPNG(
 	png_write_image(ps, (png_bytepp)&vRows[0]);
 	png_write_end(ps, pi);
 	png_destroy_write_struct(&ps, &pi);
-	std::fclose(f);
 }
 
 } // namespace fitmb

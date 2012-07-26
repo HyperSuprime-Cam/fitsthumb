@@ -4,8 +4,8 @@
 #include <exception>
 #include <string>
 #include <sstream>
-#include <cstddef>
-using std::size_t;
+#include <cstdio>
+
 
 namespace fitmb
 {
@@ -402,6 +402,32 @@ typedef size_to_type<4, false>::val  uint32;
 typedef size_to_type<4, true >::val  sint32;
 typedef size_to_type<8, false>::val  uint64;
 typedef size_to_type<8, true >::val  sint64;
+
+
+//__________________________________________________________________________
+// File pointer holder
+class File
+{
+public:
+    File(): f_() {}
+    explicit File(std::FILE* f): f_(f) {}
+    ~File(){ this->Close(); }
+
+    void Close(){
+        if(f_){
+            std::fclose(f_);
+            f_ = NULL;
+        }
+    }
+
+    std::FILE* get() const { return f_; }
+
+private:
+    File(File const&);
+    void operator=(File const&);
+
+    std::FILE* f_;
+};
 
 
 } // namespace fitmb
