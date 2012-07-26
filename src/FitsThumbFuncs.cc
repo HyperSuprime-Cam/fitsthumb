@@ -12,7 +12,7 @@
 //typedef afwImage::Image<float> ImageF;
 
 // Input is file path to FITS image file
-int hsc::fitsthumb::createFitsThumb(const char *inputFile, const char * outputFile, const char* outputType = "png", int width = 0, int height = 0, bool dynamicRangeFirst = true)
+int hsc::fitsthumb::createFitsThumb(const char *inputFile, const char * outputFile, const char* outputType, int width, int height, bool dynamicRangeFirst)
 {
 	using namespace fitmb;
 	using namespace std;
@@ -83,7 +83,7 @@ int hsc::fitsthumb::createFitsThumb(const char *inputFile, const char * outputFi
 
 
 // Input is afw.Image object
-int hsc::fitsthumb::createFitsThumb(lsst::afw::image::Image<float>::Ptr &image, const char *outputFile, const char* outputType = "png", int width = 0, int height = 0, bool dynamicRangeFirst = true)
+int hsc::fitsthumb::createFitsThumb(lsst::afw::image::Image<float>::Ptr &image, const char *outputFile, const char* outputType, int width, int height, bool dynamicRangeFirst)
 {
 
     using namespace fitmb;

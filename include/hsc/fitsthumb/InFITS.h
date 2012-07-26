@@ -35,7 +35,7 @@ InFITS(const char* szFile)
 {
 	int status = 0;
 	fitsfile* f;
-	fits_open_diskfile(&f, szFile, READONLY, &status);
+	fits_open_file(&f, szFile, READONLY, &status);
 	if(status != 0){
 		throw std::runtime_error(MSG(szFile << " cannot be opened."));
 	}
