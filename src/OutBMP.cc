@@ -1,6 +1,7 @@
 #include "hsc/fitsthumb/OutBMP.h"
 
 #include <cstdio>
+#include <stdexcept>
 
 namespace fitmb
 {
@@ -60,14 +61,14 @@ OutBMP(
 
 	File f(std::fopen(szFile, "wb"));
 	if(! f.get()){
-		throw CException("OutBMP: ", szFile, " が開けない");
+		throw std::runtime_error(MSG("OutBMP: " << szFile << ": cannot be created"));
 	}
 
 	sint32 cbPad = cbLine - image.width();
 
 #define BMP_FWRITE(data, size, count, file) \
 	if((size_t)count != std::fwrite(data, size, count, file)){ \
-		throw CException("OutBMP: ", szFile, ": 書き込みエラー"); \
+		throw std::runtime_error(MSG("OutBMP: " << szFile << ": Error in writing")); \
 	}
 
     BMP_FWRITE(&fh    , sizeof(fh),   1, f.get());

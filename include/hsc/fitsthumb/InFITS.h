@@ -37,7 +37,7 @@ InFITS(const char* szFile)
 	fitsfile* f;
 	fits_open_diskfile(&f, szFile, READONLY, &status);
 	if(status != 0){
-		throw CException(szFile, " cannot be opened.");
+		throw std::runtime_error(MSG(szFile << " cannot be opened."));
 	}
 
 	long naxis[2];
@@ -46,7 +46,7 @@ InFITS(const char* szFile)
 	if(num != 2){
 		status = 0;
 		fits_close_file(f, &status);
-		throw CException(szFile, ": is not a 2-dimensional image.");
+		throw std::runtime_error(MSG(szFile << ": is not a 2-dimensional image."));
 	}
 
 	int width  = naxis[0];
@@ -70,7 +70,7 @@ InFITS(const char* szFile)
 	if(status != 0){
 		status = 0;
 		fits_close_file(f, &status);
-		throw CException(szFile, ": read error.");
+		throw std::runtime_error(MSG(szFile << ": read error."));
 	}
 
 	status = 0;

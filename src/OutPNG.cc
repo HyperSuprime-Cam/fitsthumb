@@ -11,6 +11,8 @@
 #	pragma comment(lib, "zlibd.lib")
 #endif
 
+#include <stdexcept>
+
 
 namespace fitmb
 {
@@ -32,21 +34,21 @@ OutPNG(
 
 	File f(std::fopen(szFile, "wb"));
 	if(! f.get()){
-		throw CException("OutPNG: ", szFile, " が開けない");
+		throw std::runtime_error(MSG("OutPNG: " << szFile << ": cannot be created"));
 	}
 
 	png_structp ps = png_create_write_struct(
 		PNG_LIBPNG_VER_STRING, NULL, NULL, NULL
 	);
 	if(! ps){
-		throw CException("OutPNG: ", szFile,
-			": png_create_write_struct 失敗");
+		throw std::runtime_error(MSG("OutPNG: " << szFile <<
+			": png_create_write_struct failed"));
 	}
 
 	png_infop pi = png_create_info_struct(ps);
 	if(! ps){
-		throw CException("OutPNG: ", szFile,
-			": png_create_info_struct 失敗");
+		throw std::runtime_error(MSG("OutPNG: " << szFile <<
+			": png_create_info_struct failed"));
 	}
 
 	png_init_io(ps, f.get());

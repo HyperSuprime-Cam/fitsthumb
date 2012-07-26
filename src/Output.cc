@@ -4,6 +4,7 @@
 #include "hsc/fitsthumb/OutPNG.h"
 
 #include <string>
+#include <stdexcept>
 
 namespace fitmb
 {
@@ -31,7 +32,7 @@ Output(
 		OutPNG(image, sFile.c_str());
 	}
 	else{
-		throw CException(sType, ": サポートされていない形式");
+		throw std::runtime_error(MSG(sType << ": unsupported format"));
 	}
 }
 

@@ -1,90 +1,27 @@
 #ifndef fitmb_Common_hpp__
 #define fitmb_Common_hpp__
 
-#include <exception>
 #include <string>
 #include <sstream>
 #include <cstdio>
 
 
+//____________________________________________________________________________
+// Message string, used as:
+//     throw std::runtime_error(MSG("ERROR with a = " << a << ", " << "b = " << b));
+
+#define MSG(msg__) \
+    static_cast<std::stringstream&> \
+    (    const_cast<std::stringstream&> \
+         (  static_cast<std::stringstream const&>(std::stringstream()) \
+         ) << msg__ \
+    ).str()
+
+#define CMSG(msg__)   MSG(msg__).c_str()
+
+
 namespace fitmb
 {
-
-//__________________________________________________________________________
-// exception type
-class CException: public std::exception
-{
-public:
-	virtual ~CException() throw() {}
-	CException(){}
-
-	virtual const char* what() const throw() { return sWhat_.c_str(); }
-
-	template <class T1>
-	CException(const T1& t1) {
-		std::stringstream ss; ss << t1; sWhat_ = ss.str();
-	}
-	template <class T1, class T2>
-	CException(const T1& t1, const T2& t2) {
-		std::stringstream ss; ss << t1 << t2; sWhat_ = ss.str();
-	}
-	template <class T1, class T2, class T3>
-	CException(const T1& t1, const T2& t2, const T3& t3) {
-		std::stringstream ss; ss << t1 << t2 << t3; sWhat_ = ss.str();
-	}
-	template <class T1, class T2, class T3, class T4>
-	CException(const T1& t1, const T2& t2, const T3& t3, const T4& t4) {
-		std::stringstream ss; ss << t1 << t2 << t3 << t4; sWhat_ = ss.str();
-	}
-	template <class T1, class T2, class T3, class T4, class T5>
-	CException(
-		const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5
-	){
-		std::stringstream ss; ss << t1 << t2 << t3 << t4 << t5;
-		sWhat_ = ss.str();
-	}
-	template <class T1, class T2, class T3, class T4, class T5, class T6>
-	CException(
-		const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5,
-		const T6& t6
-	){
-		std::stringstream ss; ss << t1 << t2 << t3 << t4 << t5 << t6;
-		sWhat_ = ss.str();
-	}
-	template <class T1, class T2, class T3, class T4, class T5,
-		class T6, class T7>
-	CException(
-		const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5,
-		const T6& t6, const T7& t7
-	){
-		std::stringstream ss; ss << t1 << t2 << t3 << t4 << t5 << t6 << t7;
-		sWhat_ = ss.str();
-	}
-	template <class T1, class T2, class T3, class T4, class T5,
-		class T6, class T7, class T8>
-	CException(
-		const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5,
-		const T6& t6, const T7& t7, const T8& t8
-	){
-		std::stringstream ss;
-		ss << t1 << t2 << t3 << t4 << t5 << t6 << t7 << t8;
-		sWhat_ = ss.str();
-	}
-	template <class T1, class T2, class T3, class T4, class T5,
-		class T6, class T7, class T8, class T9>
-	CException(
-		const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5,
-		const T6& t6, const T7& t7, const T8& t8, const T9& t9
-	){
-		std::stringstream ss;
-		ss << t1 << t2 << t3 << t4 << t5 << t6 << t7 << t8 << t9;
-		sWhat_ = ss.str();
-	}
-
-private:
-	std::string sWhat_;
-};
-
 
 //____________________________________________________________________________
 // Bool return-type

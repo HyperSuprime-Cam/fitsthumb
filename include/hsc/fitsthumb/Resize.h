@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 namespace fitmb {
 
@@ -17,7 +18,7 @@ ResizeDown(
 	int h_new
 ){
 	if(w_new < 0 && h_new < 0){
-		throw CException("Resize: サイズが 0");
+		throw std::runtime_error("Resize: Target image size is 0");
 	}
 
 	if(w_new == 0){
@@ -28,12 +29,11 @@ ResizeDown(
 	}
 
 	if(w_new > image.width() || h_new > image.height()){
-		throw CException
-		(
-			"Resize: 拡大はできない: ("
-		,	image.width() , ", " , image.height() , ") -> ("
-		,	w_new , ", " , h_new , ")"
-		);
+		throw std::runtime_error(MSG
+		(   "Resize: Rescaling larger is not supported: ("
+		<<	image.width() << ", " << image.height() << ") -> ("
+		<<	w_new << ", " << h_new << ")"
+		));
 	}
 
 	Ptr<C2DArray<Tto> > pDest (new C2DArray<Tto>(w_new, h_new));

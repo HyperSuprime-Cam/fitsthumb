@@ -6,6 +6,7 @@
 #include <cmath>
 #include <algorithm>
 #include <cstdio>
+#include <stdexcept>
 
 namespace fitmb
 {
@@ -60,7 +61,7 @@ _ZSC_ComputeSigma(
 		sumsq / (goodPix - 1) - sumz * sumz / (goodPix * (goodPix - 1));
 
 	return (tmp > 0) ? std::sqrt(tmp) : 0;
-		
+
 }
 
 
@@ -187,7 +188,7 @@ _ZScale(
 	int nPix = vSample.size();
 
 	if(vSample.empty()){
-		throw CException("ZScale: 画像サイズが 0");
+		throw std::runtime_error("ZScale: Image size is 0");
 	}
 
 	// ソート

@@ -9,6 +9,9 @@
 #	pragma comment(lib, "jpegd.lib")
 #endif
 
+#include <stdexcept>
+
+
 namespace fitmb
 {
 
@@ -35,7 +38,7 @@ OutJPG(
 
 	File f(std::fopen(szFile, "wb"));
 	if(! f.get()){
-		throw CException("OutJPG: ", szFile, " が開けない");
+		throw std::runtime_error(MSG("OutJPG: " << szFile << ": cannot be created"));
 	}
 
 	jpeg_stdio_dest(&jcom, f.get());
