@@ -24,7 +24,6 @@ Python interface to hsc::fitsthumb
 #include "hsc/fitsthumb/InFITS.h"
 #include "hsc/fitsthumb/Output.h"
 #include "hsc/fitsthumb/Resize.h"
-#include "hsc/fitsthumb/CommandLine.h"
 #include "hsc/fitsthumb/FitsThumbFuncs.h"
 #include <cstdio>
 %}

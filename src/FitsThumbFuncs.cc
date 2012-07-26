@@ -2,7 +2,6 @@
 #include "hsc/fitsthumb/InFITS.h"
 #include "hsc/fitsthumb/Output.h"
 #include "hsc/fitsthumb/Resize.h"
-#include "hsc/fitsthumb/CommandLine.h"
 #include "hsc/fitsthumb/FitsThumbFuncs.h"
 //#include "lsst/afw/image/Image.h"
 // 'fitmb::Ptr< fitmb::C2DArray< float > > *',
@@ -108,14 +107,14 @@ int hsc::fitsthumb::createFitsThumb(lsst::afw::image::Image<float>::Ptr &image, 
             Ptr<C2DArray<uint8> > pZScale =
                 ConvRange_ZScale<uint8>(*pSrc);
             Del(pSrc);
-            
+
             // doing resize
             Ptr<C2DArray<double> > pResize =
                 ResizeDown<double>(
                     *pZScale, width, height
                     );
             Del(pZScale);
-            
+
             pDest = ToUInt8(*pResize);
             Del(pResize);
         }
@@ -146,7 +145,7 @@ int hsc::fitsthumb::createFitsThumb(lsst::afw::image::Image<float>::Ptr &image, 
         std::fprintf(stdout, "error: %s\n", e.what());
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -173,7 +172,7 @@ fitmb::Ptr< fitmb::C2DArray<float> > hsc::fitsthumb::convertImageToC2dArray(lsst
         pixPtr++;
 //        i += 1;
     }
-    
+
     return imageArray;
 
 }

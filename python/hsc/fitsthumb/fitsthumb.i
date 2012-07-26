@@ -4,7 +4,6 @@
 #include "hsc/onsite/qa/fitsthumb/InFITS.h"
 #include "hsc/onsite/qa/fitsthumb/Output.h"
 #include "hsc/onsite/qa/fitsthumb/Resize.h"
-#include "hsc/onsite/qa/fitsthumb/CommandLine.h"
 #include "hsc/onsite/qa/fitsthumb/FitsThumbFuncs.h"
 #include <cstdio>
 %}
