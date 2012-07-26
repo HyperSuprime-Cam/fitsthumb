@@ -75,8 +75,8 @@ OutBMP(
     BMP_FWRITE(&ih    , sizeof(ih),   1, f.get());
     BMP_FWRITE(palette, 4         , 256, f.get());
 
-    // fits は bmp と同じく下から上の順に格納されているので
-    // 他のように逆順に出力しなくていい
+    // FITS and BMP both stores image upside down,
+    // so we don't have to care about that.
     uint8* p = image.ptr();
     for(int i = image.height(); i > 0; --i){
         BMP_FWRITE(p, 1, image.width(), f.get());

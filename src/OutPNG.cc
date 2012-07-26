@@ -24,8 +24,8 @@ OutPNG(
 	std::vector<uint8*> vRows;
 	vRows.reserve(image.height());
 
-	// fits は下から上の順に格納されているので
-	// 逆順に出力
+    // Images are stored upside down in FITS,
+	// so output inversely
 	uint8* pRow = image.ptr() + image.width() * image.height();
 	for(int i = image.height(); i > 0; --i){
 		pRow -= image.width();

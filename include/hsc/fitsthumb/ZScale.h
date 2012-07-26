@@ -17,7 +17,8 @@ void _ZSC_Sample(
 	int                 nSamples,
 	std::vector<T>&     vSample_o
 ){
-	// image から 格子状に nSample 個「くらい」サンプリング
+	// extract, from image, about nSample samples
+    // such that they form a grid.
 
 	int stride = std::max(
 		1,
@@ -76,7 +77,7 @@ void _ZSC_FitLine(
 	double*               pzstart_o,
 	double*               pzslope_o
 ){
-	// vSample のインデクスを -1.0 - 1.0 にマップ
+	// map the indices of vSample to [-1.0, 1.0]
 	double xscale = 2.0 / (vSample.size() - 1);
 	std::vector<double> xnorm;
 	xnorm.reserve(vSample.size());
@@ -84,13 +85,13 @@ void _ZSC_FitLine(
 		xnorm.push_back((double)i * xscale - 1.0);
 	}
 
-	// k-sigmaクリップに使うマスク
+	// Mask that is used in k-sigma clipping
 	std::vector<int> vBadPix(vSample.size(), 0);
 
 	int nGoodPix      =  vSample.size();
 	int last_nGoodPix = nGoodPix + 1;
 
-	// 求めるべき値
+	// values to be obtained
 	double intercept = 0;
 	double slope     = 0;
 
@@ -98,7 +99,6 @@ void _ZSC_FitLine(
 		if(nGoodPix >= last_nGoodPix) break;
 		if(nGoodPix <  minpix)        break;
 
-		// サム
 		double sum = (double)nGoodPix;
 		double sumx = 0, sumy = 0, sumxx = 0, sumxy = 0;
 		for(unsigned i = 0; i < vSample.size(); ++i){
@@ -115,11 +115,11 @@ void _ZSC_FitLine(
 
 		double delta = sum * sumxx - sumx * sumx;
 
-		// 傾きと切片
+		// slope and intercept
 		intercept = (sumxx * sumy - sumx * sumxy) / delta;
 		slope     = (sum * sumxy - sumx * sumy) / delta;
 
-		// 残差
+		// residue
 		std::vector<double> vFlat;
 		vFlat.reserve(vSample.size());
 		for(unsigned i = 0; i < vSample.size(); ++i){
@@ -128,12 +128,12 @@ void _ZSC_FitLine(
 			);
 		}
 
-		// k-sigma クリップのスレッシュホルド
+		// Threshold of k-sigma clipping
 		double sigma = _ZSC_ComputeSigma(vFlat, vBadPix, nGoodPix);
 		double hcut = sigma * krej;
 		double lcut = - hcut;
 
-		// vBadPix を更新
+		// revise vBadPix
 		last_nGoodPix = nGoodPix;
 		nGoodPix = 0;
 
@@ -144,7 +144,7 @@ void _ZSC_FitLine(
 			}
 		}
 
-		// vBadPix をぼかす
+		// blurr vBadPix
 		std::vector<int>vBadPix_new;
 		vBadPix_new.reserve(vSample.size());
 		for(unsigned x = 0; x < vSample.size(); ++x){
@@ -161,7 +161,7 @@ void _ZSC_FitLine(
 		vBadPix = vBadPix_new;
 	}
 
-	// x方向のスケールを元に戻す
+	// restore the scale of x-axis
 	*pnGoodPix_o = nGoodPix;
 	*pzstart_o   = intercept - slope;
 	*pzslope_o   = slope * xscale;
@@ -182,7 +182,7 @@ _ZScale(
 	const double dKREJ          = 2.5;
 	const int iITERATIONS       = 5;
 
-	// サンプルを抽出
+	// extract samples
 	std::vector<T> vSample;
 	_ZSC_Sample(image, nSamples, vSample);
 	int nPix = vSample.size();
@@ -191,10 +191,9 @@ _ZScale(
 		throw std::runtime_error("ZScale: Image size is 0");
 	}
 
-	// ソート
 	std::sort(vSample.begin(), vSample.end());
 
-	// 最大値、最小値、メディアン
+	// max, min, median
 	double zmin = vSample.front();
 	double zmax = vSample.back();
 	int iCenter = nPix / 2;
@@ -202,7 +201,7 @@ _ZScale(
 		vSample[iCenter] :
 		(vSample[iCenter] + vSample[iCenter+1]) / 2 ;
 
-	// ソートしたサンプルに直線をフィット
+	// fit a line to the sorted sample
 	int minpix = std::max(iMIN_NPIXELS, nPix / iMAX_REJECT_RATIO);
 	int nGrow  = std::max(1, nPix / 100);
 	int nGoodPix;
@@ -236,7 +235,7 @@ ConvRange_ZScale(
 	double z1, z2;
 	_ZScale(image, nSamples, contrast, &z1, &z2);
 
-	std::printf("dynamrange: %g - %g\n", z1, z2);
+	//std::printf("dynamrange: %g - %g\n", z1, z2);
 
 	Ptr<C2DArray<Tto> > pDest (
 		new C2DArray<Tto>(image.width(), image.height())
