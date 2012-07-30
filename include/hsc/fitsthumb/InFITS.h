@@ -16,17 +16,26 @@ namespace fitmb
 {
 
 template <class T>
-struct _CFitsioType;
+struct _InFits_IsSigned
+{
+    static const bool value = (T(-1) < T(0));
+};
 
-template <> struct _CFitsioType<sint8>  { enum { v = TSBYTE  }; };
-template <> struct _CFitsioType<uint8>  { enum { v = TBYTE   }; };
-template <> struct _CFitsioType<sint16> { enum { v = TSHORT  }; };
-template <> struct _CFitsioType<uint16> { enum { v = TUSHORT }; };
-template <> struct _CFitsioType<sint32> { enum { v = TLONG   }; };
-template <> struct _CFitsioType<uint32> { enum { v = TULONG  }; };
-template <> struct _CFitsioType<sint64> { enum { v = TLONGLONG }; };
-template <> struct _CFitsioType<float>  { enum { v = TFLOAT  }; };
-template <> struct _CFitsioType<double> { enum { v = TDOUBLE }; };
+template <class T>
+struct _FitsIOInternalType;
+
+template <> struct _FitsIOInternalType<char          > { static const int value = _InFits_IsSigned<char>::value? TSBYTE: TBYTE ; };
+template <> struct _FitsIOInternalType<signed char   > { static const int value = TSBYTE    ; };
+template <> struct _FitsIOInternalType<unsigned char > { static const int value = TBYTE     ; };
+template <> struct _FitsIOInternalType<short         > { static const int value = TSHORT    ; };
+template <> struct _FitsIOInternalType<unsigned short> { static const int value = TUSHORT   ; };
+template <> struct _FitsIOInternalType<int           > { static const int value = TINT      ; };
+template <> struct _FitsIOInternalType<unsigned int  > { static const int value = TUINT     ; };
+template <> struct _FitsIOInternalType<long          > { static const int value = TLONG     ; };
+template <> struct _FitsIOInternalType<unsigned long > { static const int value = TULONG    ; };
+template <> struct _FitsIOInternalType<long long     > { static const int value = TLONGLONG ; };
+template <> struct _FitsIOInternalType<float         > { static const int value = TFLOAT    ; };
+template <> struct _FitsIOInternalType<double        > { static const int value = TDOUBLE   ; };
 
 
 template <class T>
@@ -58,7 +67,7 @@ InFITS(const char* szFile)
     int anynul;
     fits_read_img
     (   f
-    ,   _CFitsioType<T>::v
+    ,   _FitsIOInternalType<T>::value
     ,   1
     ,   width*height
     ,   0
