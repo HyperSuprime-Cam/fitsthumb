@@ -21,3 +21,4 @@ python/hsc/fitsthumb/version.py
 
 test.jpg
 test.png
+tests/.tests
