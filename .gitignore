@@ -1,0 +1,6 @@
+.scon*
+python/hsc/fitsthumb/fitsthumbLib.py
+python/hsc/fitsthumb/fitsthumbLib_wrap.cc
+python/hsc/fitsthumb/version.py
+*.os
+ups/fitsthumb.cfgc
