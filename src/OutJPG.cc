@@ -49,10 +49,10 @@ OutJPG(
     jcom.in_color_space = JCS_GRAYSCALE;
     jpeg_set_defaults(&jcom);
 
-    jpeg_set_quality(&jcom, 80 /*0 - 100*/, true);
+    jpeg_set_quality(&jcom, 80 /*0 - 100*/, static_cast<boolean>(true));
 
     // begin compression
-    jpeg_start_compress(&jcom, true);
+    jpeg_start_compress(&jcom, static_cast<boolean>(true));
     jpeg_write_scanlines(
         &jcom, (JSAMPARRAY)&vRows[0], image.height()
     );
