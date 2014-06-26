@@ -46,9 +46,16 @@ OutPNG(
     }
 
     png_infop pi = png_create_info_struct(ps);
-    if(! ps){
+    if(! pi){
+        png_destroy_write_struct(&ps, NULL);
         throw std::runtime_error(MSG("OutPNG: " << szFile <<
             ": png_create_info_struct failed"));
+    }
+
+    if (setjmp(png_jmpbuf(ps))){
+        png_destroy_write_struct(&ps, &pi);
+        throw std::runtime_error(MSG("OutPNG: " << szFile <<
+            ": some error in writing PNG file"));
     }
 
     png_init_io(ps, f.get());
