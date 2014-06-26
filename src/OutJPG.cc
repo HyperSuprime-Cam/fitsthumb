@@ -10,10 +10,27 @@
 #endif
 
 #include <stdexcept>
-
+#include <csetjmp>
 
 namespace fitmb
 {
+
+namespace {
+    struct ErrorManager
+        : public jpeg_error_mgr
+    {
+        std::jmp_buf  jumpLabel;
+        char errorMsg[JMSG_LENGTH_MAX];
+
+        static void ErrorExit(j_common_ptr cp)
+        {
+            ErrorManager* This = static_cast<ErrorManager*>(cp->err);
+
+            This->format_message(cp, This->errorMsg);
+            std::longjmp(This->jumpLabel, 1);
+        }
+    };
+}
 
 void
 OutJPG(
@@ -30,17 +47,23 @@ OutJPG(
         vRows.push_back(pRow);
     }
 
-    // prepare JPG
-    jpeg_error_mgr        jerr;
-    jpeg_compress_struct  jcom;
-    jcom.err = jpeg_std_error(&jerr);
-    jpeg_create_compress(&jcom);
-
     File f(std::fopen(szFile, "wb"));
     if(! f.get()){
         throw std::runtime_error(MSG("OutJPG: " << szFile << ": cannot be created"));
     }
 
+    // prepare JPG
+    ErrorManager          jerr;
+    jpeg_compress_struct  jcom;
+    jcom.err = jpeg_std_error(&jerr);
+    jerr.error_exit = ErrorManager::ErrorExit;
+    if(setjmp(jerr.jumpLabel)){
+        // jumped into because error has ocurred during compression
+        jpeg_destroy_compress(&jcom);
+        throw std::runtime_error(MSG("OutJPG: " << szFile << ": error during compression"));
+    }
+
+    jpeg_create_compress(&jcom);
     jpeg_stdio_dest(&jcom, f.get());
 
     jcom.image_width  = image.width();
