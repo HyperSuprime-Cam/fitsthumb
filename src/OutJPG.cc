@@ -60,7 +60,7 @@ OutJPG(
     if(setjmp(jerr.jumpLabel)){
         // jumped into because error has ocurred during compression
         jpeg_destroy_compress(&jcom);
-        throw std::runtime_error(MSG("OutJPG: " << szFile << ": error during compression"));
+        throw std::runtime_error(MSG("OutJPG: " << szFile << ": " << jerr.errorMsg));
     }
 
     jpeg_create_compress(&jcom);
