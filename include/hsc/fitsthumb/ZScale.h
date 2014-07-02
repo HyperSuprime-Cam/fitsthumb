@@ -19,18 +19,27 @@ void _ZSC_Sample(
 ){
     // extract, from image, about nSample samples
     // such that they form a grid.
+    vSample_o.reserve(nSamples);
 
     int stride = std::max(
         1,
         int(std::sqrt(image.size() / (double)nSamples))
     );
 
-    vSample_o.reserve(nSamples);
+    while(stride >= 1){
+        vSample_o.clear();
 
-    for(int y = 0; y < image.height(); y += stride){
-        for(int x = 0; x < image.width(); x += stride){
-            vSample_o.push_back(image(x, y));
+        for(int y = 0; y < image.height(); y += stride){
+            for(int x = 0; x < image.width(); x += stride){
+                T elem = image(x, y);
+                if(std::isfinite(elem)) vSample_o.push_back(elem);
+            }
         }
+
+        // if more than 80% of nSamples were sampled, OK.
+        if(vSample_o.size() * 5 > (std::size_t)nSamples * 4) break;
+
+        --stride;
     }
 }
 
@@ -188,7 +197,7 @@ _ZScale(
     int nPix = vSample.size();
 
     if(vSample.empty()){
-        throw std::runtime_error("ZScale: Image size is 0");
+        throw std::runtime_error("ZScale: No pixel in image is finite");
     }
 
     std::sort(vSample.begin(), vSample.end());
