@@ -1,6 +1,7 @@
-#include "hsc/fitsthumb/OutJPG.h"
+#include "OutJPG.h"
 
 #include <cstdio>
+#include <vector>
 
 #include <jpeglib.h> // libjpeg header
 #ifdef NDEBUG
@@ -12,10 +13,19 @@
 #include <stdexcept>
 #include <csetjmp>
 
-namespace fitmb
-{
+namespace hsc { namespace fitsthumb {
 
 namespace {
+    class FileCloser
+    {
+    public:
+        explicit FileCloser(std::FILE* f): f_(f) {}
+        void operator()() const { std::fclose(f_); }
+    private:
+        std::FILE* f_;
+    };
+
+
     struct ErrorManager
         : public jpeg_error_mgr
     {
@@ -34,23 +44,23 @@ namespace {
 
 void
 OutJPG(
-    const C2DArray<uint8>& image, const char* szFile
+    Image<uint8_t> const& image,
+    char           const* szFile
 ){
-    std::vector<uint8*> vRows;
-    vRows.reserve(image.height());
+    std::vector<uint8_t const*> vRows;
+    vRows.reserve(image.Height());
 
     // Images are stored upside down in FITS,
     // so output inversely
-    uint8* pRow = image.ptr() + image.width() * image.height();
-    for(int i = image.height(); i > 0; --i){
-        pRow -= image.width();
-        vRows.push_back(pRow);
+    for(std::size_t y = image.Height(); y > 0; --y){
+        vRows.push_back(image[y-1]);
     }
 
-    File f(std::fopen(szFile, "wb"));
-    if(! f.get()){
+    FILE* f = std::fopen(szFile, "wb");
+    if(!f){
         throw std::runtime_error(MSG("OutJPG: " << szFile << ": cannot be created"));
     }
+    Destructor const& fileCloser = MakeDestructor(FileCloser(f));
 
     // prepare JPG
     ErrorManager          jerr;
@@ -64,10 +74,10 @@ OutJPG(
     }
 
     jpeg_create_compress(&jcom);
-    jpeg_stdio_dest(&jcom, f.get());
+    jpeg_stdio_dest(&jcom, f);
 
-    jcom.image_width  = image.width();
-    jcom.image_height = image.height();
+    jcom.image_width  = image.Width();
+    jcom.image_height = image.Height();
     jcom.input_components = 1; /* number of colors */
     jcom.in_color_space = JCS_GRAYSCALE;
     jpeg_set_defaults(&jcom);
@@ -77,7 +87,7 @@ OutJPG(
     // begin compression
     jpeg_start_compress(&jcom, static_cast<boolean>(true));
     jpeg_write_scanlines(
-        &jcom, (JSAMPARRAY)&vRows[0], image.height()
+        &jcom, (JSAMPARRAY)vRows.data(), image.Height()
     );
     jpeg_finish_compress(&jcom);
 
@@ -85,4 +95,4 @@ OutJPG(
     jpeg_destroy_compress(&jcom);
 }
 
-} // namespace fitmb
+}} // namespace hsc::fitsthumb

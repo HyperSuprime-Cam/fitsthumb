@@ -1,89 +1,100 @@
-#include "hsc/fitsthumb/OutBMP.h"
+#include "OutBMP.h"
 
 #include <cstdio>
 #include <stdexcept>
+#include "Common.h"
 
-namespace fitmb
-{
+namespace hsc { namespace fitsthumb {
 
 
 #pragma pack(push, 1)
-struct SBitMapFileHeader
+struct BitMapFileHeader
 {
-    uint16   bfType;
-    uint32   bfSize;
-    uint16   bfReserved1;
-    uint16   bfReserved2;
-    uint32   bfOffBits;
+    uint16_t   bfType;
+    uint32_t   bfSize;
+    uint16_t   bfReserved1;
+    uint16_t   bfReserved2;
+    uint32_t   bfOffBits;
 };
 
-struct SBitMapInfoHeader
+struct BitMapInfoHeader
 {
-    uint32   biSize;
-    sint32   biWidth;
-    sint32   biHeight;
-    uint16   biPlanes;
-    uint16   biBitCount;
-    uint32   biCompression;
-    uint32   biSizeImage;
-    sint32   biXPelsPerMeter;
-    sint32   biYPelsPerMeter;
-    uint32   biClrUsed;
-    uint32   biClrImportant;
+    uint32_t   biSize;
+     int32_t   biWidth;
+     int32_t   biHeight;
+    uint16_t   biPlanes;
+    uint16_t   biBitCount;
+    uint32_t   biCompression;
+    uint32_t   biSizeImage;
+     int32_t   biXPelsPerMeter;
+     int32_t   biYPelsPerMeter;
+    uint32_t   biClrUsed;
+    uint32_t   biClrImportant;
 };
 #pragma pack(pop)
 
-//___________________________________________________________________________
+
+namespace {
+    class FileCloser
+    {
+    public:
+        explicit FileCloser(std::FILE* f): f_(f) {}
+        void operator()() const { std::fclose(f_); }
+    private:
+        std::FILE* f_;
+    };
+}
+
+
 void
 OutBMP(
-    const C2DArray<uint8>& image,
-    const char*            szFile
+    Image<uint8_t> const& image,
+    char           const* szFile
 ){
-    SBitMapFileHeader fh = {};
-    SBitMapInfoHeader ih = {};
+    BitMapFileHeader fh = {};
+    BitMapInfoHeader ih = {};
 
     ih.biSize  = sizeof(ih);
-    ih.biWidth = image.width();
-    ih.biHeight = image.height();
+    ih.biWidth = image.Width();
+    ih.biHeight = image.Height();
     ih.biPlanes = 1;
     ih.biBitCount = 8;
 
-    uint32 palette[256];
-    for(uint32 i = 0; i < 256; ++i){
+    uint32_t palette[256];
+    for(uint32_t i = 0; i < 256; ++i){
         palette[i] = i | (i << 8) | (i << 16);
     }
 
-    sint32 cbLine = (image.width() + 3) & ~(uint32)3;
+    int32_t cbLine = (image.Width() + 3) & ~(std::size_t)3;
 
-    fh.bfType = (uint16)'B' | ((uint16)'M' << 8);
+    fh.bfType = (uint16_t)'B' | ((uint16_t)'M' << 8);
     fh.bfOffBits = sizeof(fh) + sizeof(ih) + sizeof(palette);
-    fh.bfSize = fh.bfOffBits + cbLine * image.height();
+    fh.bfSize = fh.bfOffBits + cbLine * image.Height();
 
-    File f(std::fopen(szFile, "wb"));
-    if(! f.get()){
+    FILE* f = std::fopen(szFile, "wb");
+    if(!f){
         throw std::runtime_error(MSG("OutBMP: " << szFile << ": cannot be created"));
     }
+    Destructor const& fileCloser = MakeDestructor(FileCloser(f));
 
-    sint32 cbPad = cbLine - image.width();
+    int32_t cbPad = cbLine - image.Width();
 
 #define BMP_FWRITE(data, size, count, file) \
-    if((size_t)count != std::fwrite(data, size, count, file)){ \
+    if((std::size_t)count != std::fwrite(data, size, count, file)){ \
         throw std::runtime_error(MSG("OutBMP: " << szFile << ": Error in writing")); \
     }
 
-    BMP_FWRITE(&fh    , sizeof(fh),   1, f.get());
-    BMP_FWRITE(&ih    , sizeof(ih),   1, f.get());
-    BMP_FWRITE(palette, 4         , 256, f.get());
+    BMP_FWRITE(&fh    , sizeof(fh),   1, f);
+    BMP_FWRITE(&ih    , sizeof(ih),   1, f);
+    BMP_FWRITE(palette, 4         , 256, f);
 
-    // FITS and BMP both stores image upside down,
+    // FITS and BMP both store an image upside down,
     // so we don't have to care about that.
-    uint8* p = image.ptr();
-    for(int i = image.height(); i > 0; --i){
-        BMP_FWRITE(p, 1, image.width(), f.get());
-        if(cbPad > 0){ uint32 pad = 0; BMP_FWRITE(&pad, 1, cbPad, f.get()); }
-        p += image.width();
+    for(std::size_t y = 0; y < image.Height(); ++y){
+        BMP_FWRITE(image[y], 1, image.Width(), f);
+        if(cbPad > 0){ uint32_t pad = 0; BMP_FWRITE(&pad, 1, cbPad, f); }
     }
 }
 
 
-} // namespace fitmb
+}} // namespace hsc::fitsthumb

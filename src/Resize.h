@@ -1,50 +1,51 @@
-#ifndef fitmb_Resize_hpp__
-#define fitmb_Resize_hpp__
+#ifndef  gc02fb528_12f8_4309_8d29_895d8d2d9b69
+#define  gc02fb528_12f8_4309_8d29_895d8d2d9b69
 
-#include "2DArray.h"
+#include "hsc/fitsthumb/Image.h"
 #include "Common.h"
 
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
 
-namespace fitmb {
+namespace hsc { namespace fitsthumb {
 
 template <class Tto, class Tfrom>
-Ptr<C2DArray<Tto> >
+Image<Tto>
 ResizeDown(
-    const C2DArray<Tfrom>& image,
+    Image<Tfrom> const& image,
     int w_new,
     int h_new
 ){
-    if(w_new < 0 && h_new < 0){
+    if(w_new <= 0 && h_new <= 0){
         throw std::runtime_error("Resize: Target image size is 0");
     }
 
-    if(w_new == 0){
-        w_new = std::max(1, h_new * image.width() / image.height());
+    if(w_new <= 0){
+        w_new = std::max(std::size_t(1), h_new * image.Width() / image.Height());
     }
-    if(h_new == 0){
-        h_new = std::max(1, w_new * image.height() / image.width());
+    if(h_new <= 0){
+        h_new = std::max(std::size_t(1), w_new * image.Height() / image.Width());
     }
 
-    if(w_new > image.width() || h_new > image.height()){
+    if(w_new > (int)image.Width() || h_new > (int)image.Height()){
         throw std::runtime_error(MSG
         (   "Resize: Rescaling larger is not supported: ("
-        <<  image.width() << ", " << image.height() << ") -> ("
+        <<  image.Width() << ", " << image.Height() << ") -> ("
         <<  w_new << ", " << h_new << ")"
         ));
     }
 
-    Ptr<C2DArray<Tto> > pDest (new C2DArray<Tto>(w_new, h_new));
-    pDest->resize(w_new * h_new, 0);
+    Image<Tto> dest(h_new, w_new);
+    std::fill_n(dest.data(), dest.size(), 0);
 
-    double w_ratio = w_new / (double)image.width();
-    double h_ratio = h_new / (double)image.height();
+    double w_ratio = w_new / (double)image.Width();
+    double h_ratio = h_new / (double)image.Height();
 
-    Tfrom* pLine = image.ptr();
     double yTo0, yTo1 = 0;
-    for(int y = 0; y < image.height(); ++y){
+    for(int y = 0; y < (int)image.Height(); ++y){
+        Tfrom const* pLine = image[y];
+
         yTo0 = yTo1;
         yTo1 = (double)(y+1) * h_ratio;
 
@@ -57,7 +58,7 @@ ResizeDown(
         }
 
         double xTo0, xTo1 = 0;
-        for(int x = 0; x < image.width(); ++x){
+        for(int x = 0; x < (int)image.Width(); ++x){
             xTo0 = xTo1;
             xTo1 = (double)(x+1) * w_ratio;
 
@@ -77,30 +78,26 @@ ResizeDown(
             double vx0y1 = vx0 * yfrac;
             double vx0y0 = vx0 - vx0y1;
 
-            (*pDest)(xTo0i, yTo0i) += (Tto)vx0y0;
+            dest[yTo0i][xTo0i] += (Tto)vx0y0;
             if(yTo1i < h_new){
-                (*pDest)(xTo0i, yTo1i) += (Tto)vx0y1;
+                dest[yTo1i][xTo0i] += (Tto)vx0y1;
             }
             if(xTo1i < w_new){
-                (*pDest)(xTo1i, yTo0i) += (Tto)vx1y0;
+                dest[yTo0i][xTo1i] += (Tto)vx1y0;
                 if(yTo1i < h_new){
-                    (*pDest)(xTo1i, yTo1i) += (Tto)vx1y1;
+                    dest[yTo1i][xTo1i] += (Tto)vx1y1;
                 }
             }
         }
-
-        pLine += image.width();
     }
 
-    double scale = w_new * h_new / ((double)image.width() * image.height());
-    for(typename C2DArray<Tto>::iterator it = pDest->begin();
-        it != pDest->end(); ++it)
-    {
-        *it *= scale;
+    double scale = w_new * h_new / ((double)image.Width() * image.Height());
+    for(std::size_t i = 0; i < dest.size(); ++i){
+        dest.data()[i] *= scale;
     }
 
-    return pDest;
+    return dest;
 }
 
-} // namespace fitmb
-#endif // fitmb_Resize_hpp__
+}} // namespace hsc::fitsthumb
+#endif //gc02fb528_12f8_4309_8d29_895d8d2d9b69

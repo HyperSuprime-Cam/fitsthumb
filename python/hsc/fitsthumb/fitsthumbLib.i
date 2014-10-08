@@ -9,24 +9,42 @@ Python interface to hsc::fitsthumb
 %module(package="hsc.fitsthumb", docstring=fitsthumbLib_DOCSTRING) fitsthumbLib
 
 %{
-#include "lsst/afw.h"
-#include "lsst/pex/logging.h"
+    #define SWIG_FILE_WITH_INIT
+    #include "hsc/fitsthumb.h"
+    #include <stdexcept>
 %}
 
-%include "lsst/p_lsstSwig.i"
 
-%import "lsst/afw/image/imageLib.i"
-%import "lsst/afw/math/mathLib.i"
-%import "lsst/afw/cameraGeom/cameraGeomLib.i"
-
-%{
-#include "hsc/fitsthumb/ZScale.h"
-#include "hsc/fitsthumb/InFITS.h"
-#include "hsc/fitsthumb/Output.h"
-#include "hsc/fitsthumb/Resize.h"
-#include "hsc/fitsthumb/FitsThumbFuncs.h"
-#include <cstdio>
+%include "numpy.i"
+%init %{
+    import_array();
 %}
 
-%include "hsc/fitsthumb/FitsThumbFuncs.h"
+%include "exception.i"
+%exception {
+    try {
+        $action
+    }
+    catch (const std::bad_alloc& e) {
+        SWIG_exception(SWIG_MemoryError, e.what());
+    }
+    catch (const std::out_of_range& e) {
+        SWIG_exception(SWIG_IndexError, e.what());
+    }
+    catch (const std::exception& e) {
+        SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+    catch (...) {
+        SWIG_exception(SWIG_RuntimeError, "unknown exception object was thrown");
+    }
+}
 
+%include "Image.i"
+
+%include "hsc/fitsthumb.h"
+
+%template (createFitsThumb) hsc::fitsthumb::createFitsThumb<float>;
+%template (createFitsThumb) hsc::fitsthumb::createFitsThumb<double>;
+
+%template (createLogFitsThumb) hsc::fitsthumb::createLogFitsThumb<float>;
+%template (createLogFitsThumb) hsc::fitsthumb::createLogFitsThumb<double>;

@@ -1,37 +1,41 @@
-#ifndef fitmb_Scale_hpp__
-#define fitmb_Scale_hpp__
+#ifndef  gf540caa5_a6ca_4fba_8625_16cd628369a9
+#define  gf540caa5_a6ca_4fba_8625_16cd628369a9
 
-#include "2DArray.h"
+#include "hsc/fitsthumb/Image.h"
 #include "Common.h"
+#include "LinearScale.h"
 #include <cmath>
 #include <algorithm>
 #include <cstdio>
+#include <vector>
 #include <stdexcept>
 
-namespace fitmb
-{
+namespace hsc { namespace fitsthumb {
 
 template <class T>
 void _ZSC_Sample(
-    const C2DArray<T>&  image,
-    int                 nSamples,
-    std::vector<T>&     vSample_o
+    Image<T> const&  image,
+    int              nSamples,
+    std::vector<T>&  vSample_o
 ){
+    std::size_t width  = image.Width();
+    std::size_t height = image.Height();
+
     // extract, from image, about nSample samples
     // such that they form a grid.
     vSample_o.reserve(nSamples);
 
     int stride = std::max(
         1,
-        int(std::sqrt(image.size() / (double)nSamples))
+        int(std::sqrt(width*height / (double)nSamples))
     );
 
     while(stride >= 1){
         vSample_o.clear();
 
-        for(int y = 0; y < image.height(); y += stride){
-            for(int x = 0; x < image.width(); x += stride){
-                T elem = image(x, y);
+        for(std::size_t y = 0; y < height; y += stride){
+            for(std::size_t x = 0; x < width; x += stride){
+                T elem = image[y][x];
                 if(std::isfinite(elem)) vSample_o.push_back(elem);
             }
         }
@@ -180,11 +184,11 @@ void _ZSC_FitLine(
 template <class T>
 void
 _ZScale(
-    const C2DArray<T>& image,
-    int                nSamples,
-    double             contrast,
-    double*            pZ1,
-    double*            pZ2
+    Image<T> const& image,
+    int             nSamples,
+    double          contrast,
+    double*         pZ1,
+    double*         pZ2
 ){
     const int iMAX_REJECT_RATIO = 2;
     const int iMIN_NPIXELS      = 5;
@@ -234,45 +238,23 @@ _ZScale(
 }
 
 
-template <class Tto, class Tfrom>
-Ptr<C2DArray<Tto> >
-ConvRange_ZScale(
-    const C2DArray<Tfrom>& image,
-    int                    nSamples = 1000,
-    double                 contrast = 0.25
+template <class Tfrom>
+LinearScale
+ZScale(
+    Image<Tfrom> const& image,
+    int                 nSamples = 1000,
+    double              contrast = 0.25
 ){
     double z1, z2;
     _ZScale(image, nSamples, contrast, &z1, &z2);
 
-    //std::printf("dynamrange: %g - %g\n", z1, z2);
-
-    Ptr<C2DArray<Tto> > pDest (
-        new C2DArray<Tto>(image.width(), image.height())
+    return LinearScale(
+        // from
+        z1, z2,
+        // to
+        0, 1
     );
-
-    for(typename C2DArray<Tfrom>::const_iterator it = image.begin();
-        it != image.end(); ++it)
-    {
-        double val = (double)(*it);
-        val = 256 * (val - z1) / (z2 - z1);
-        Tto c;
-        if(val < 0){
-            c = 0;
-        }
-        else if(256 <= val){
-            c = 255;
-        }
-        else{
-            c = static_cast<Tto>(val);
-        }
-
-        pDest->push_back(c);
-    }
-
-    return pDest;
 }
 
-
-} // namespace fitmb
-#endif //fitmb_Scale_hpp__
-
+}} // namespace hsc::fitsthumb
+#endif //gf540caa5_a6ca_4fba_8625_16cd628369a9

@@ -1,6 +1,8 @@
-#include "hsc/fitsthumb/OutPNG.h"
+#include "OutPNG.h"
 
 #include <cstdio>
+#include <vector>
+#include <stdexcept>
 
 #include <png.h> // libpng header
 #ifdef NDEBUG
@@ -11,36 +13,45 @@
 #   pragma comment(lib, "zlibd.lib")
 #endif
 
-#include <stdexcept>
+
+namespace hsc { namespace fitsthumb {
 
 
-namespace fitmb
-{
+namespace {
+    class FileCloser
+    {
+    public:
+        explicit FileCloser(std::FILE* f): f_(f) {}
+        void operator()() const { std::fclose(f_); }
+    private:
+        std::FILE* f_;
+    };
+}
+
 
 void
 OutPNG(
-    const C2DArray<uint8>& image, const char* szFile
+    Image<uint8_t> const& image, char const* szFile
 ){
-    std::vector<uint8*> vRows;
-    vRows.reserve(image.height());
+    std::vector<uint8_t const*> vRows;
+    vRows.reserve(image.Height());
 
     // Images are stored upside down in FITS,
     // so output inversely
-    uint8* pRow = image.ptr() + image.width() * image.height();
-    for(int i = image.height(); i > 0; --i){
-        pRow -= image.width();
-        vRows.push_back(pRow);
+    for(std::size_t y = image.Height(); y > 0; --y){
+        vRows.push_back(image[y-1]);
     }
 
-    File f(std::fopen(szFile, "wb"));
-    if(! f.get()){
+    FILE* f = std::fopen(szFile, "wb");
+    if(!f){
         throw std::runtime_error(MSG("OutPNG: " << szFile << ": cannot be created"));
     }
+    Destructor const& fileCloser = MakeDestructor(FileCloser(f));
 
     png_structp ps = png_create_write_struct(
         PNG_LIBPNG_VER_STRING, NULL, NULL, NULL
     );
-    if(! ps){
+    if(!ps){
         throw std::runtime_error(MSG("OutPNG: " << szFile <<
             ": png_create_write_struct failed"));
     }
@@ -58,11 +69,11 @@ OutPNG(
             ": some error in writing PNG file"));
     }
 
-    png_init_io(ps, f.get());
+    png_init_io(ps, f);
 
     png_set_IHDR(
         ps, pi,
-        image.width(), image.height(),
+        image.Width(), image.Height(),
         8, PNG_COLOR_TYPE_GRAY,
         PNG_INTERLACE_NONE,
         PNG_COMPRESSION_TYPE_DEFAULT,
@@ -70,9 +81,9 @@ OutPNG(
     );
 
     png_write_info(ps, pi);
-    png_write_image(ps, (png_bytepp)&vRows[0]);
+    png_write_image(ps, (png_bytepp)vRows.data());
     png_write_end(ps, pi);
     png_destroy_write_struct(&ps, &pi);
 }
 
-} // namespace fitmb
+}} // namespace hsc::fitsthumb
