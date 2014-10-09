@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <iterator>
 
 
 namespace hsc { namespace fitsthumb {
@@ -109,6 +110,35 @@ namespace {
         stat.stddev = invNormalIQR * (*it3 - *it1);
         return stat;
     }
+
+
+    template <class InputIterator>
+    MinMax<typename std::iterator_traits<InputIterator>::value_type>
+    GetMinMax(InputIterator begin, InputIterator end)
+    {
+        typedef typename std::iterator_traits<InputIterator>::value_type  T;
+
+        T min = NAN;
+        for(; begin != end; ++begin){
+            min = *begin;
+            if(min == min) break;
+        }
+
+        T max = min;
+        ++begin;
+        for(; begin != end; ++begin){
+            T value = *begin;
+            if(value < min) min = value;
+            else if(max < value) max = value;
+        }
+
+        MinMax<T> mm;
+        mm.min = min;
+        mm.max = max;
+
+        return mm;
+    }
+
 }
 
 
@@ -149,7 +179,7 @@ Statistics GetStatistics(Image<Elem> const& image)
 
     Statistics stat = GetStatistics(samples);
 
-    if(is_not_finite(stat.stddev) || stat.stddev == 0.0){
+    if(!(stat.stddev > 0)){
         // if failed, and
         if(interval > 1){
             // if we have not used the whole data,
@@ -162,11 +192,49 @@ Statistics GetStatistics(Image<Elem> const& image)
     return stat;
 }
 
-
 template
 Statistics GetStatistics(Image<float> const& image);
 
 template
 Statistics GetStatistics(Image<double> const& image);
+
+
+template <class Elem>
+MinMax<Elem> GetMinMax(Image<Elem> const& image)
+{
+    if(image.Width() == image.Stride()){
+        return GetMinMax(image.data(), image.data() + image.size());
+    }
+
+    MinMax<Elem> mm;
+    mm.min = NAN;
+    mm.max = NAN;
+
+    std::size_t y;
+    for(y = 0; y < image.Height(); ++y){
+        Elem const* image_y = image[y];
+        mm = GetMinMax(image_y, image_y + image.Width());
+        if(mm.min == mm.min) break;
+    }
+
+    ++y;
+    for(; y < image.Height(); ++y){
+        Elem const* image_y = image[y];
+        MinMax<Elem> t = GetMinMax(image_y, image_y + image.Width());
+
+        if(t.min < mm.min) mm.min = t.min;
+        else if(mm.max < t.max) mm.max = t.max;
+    }
+
+    return mm;
+}
+
+template
+MinMax<float> GetMinMax(Image<float> const& image);
+
+template
+MinMax<double> GetMinMax(Image<double> const& image);
+
+
 
 }} // namespace hsc::fitsthumb

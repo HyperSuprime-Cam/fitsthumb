@@ -6,6 +6,9 @@
 
 namespace hsc { namespace fitsthumb {
 
+/** Convert an image of floats (value range [0, 1])
+    to an image of bytes (value range [0, 255])
+*/
 template <class TFrom>
 Image<uint8_t>
 ToUInt8(

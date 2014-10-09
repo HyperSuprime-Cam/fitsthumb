@@ -21,6 +21,14 @@
 
 namespace hsc { namespace fitsthumb {
 
+
+//__________________________________________________________________________
+// Install a destructor in a scope:
+// {
+//     Destructor const& dtor = MakeDestructor(func);
+//     ...
+//     // func() is called just before this scope is exited
+// }
 class Destructor
 {
 protected:
@@ -88,7 +96,7 @@ struct type_select <false, T, F>
 
 
 //__________________________________________________________________________
-// uint8 - uint64
+// uint8_t - uint64_t
 template <unsigned size, bool bSigned>
 struct size_to_type
 {

@@ -11,9 +11,19 @@ struct Statistics
     double stddev;
 };
 
-
 template <class Elem>
 Statistics GetStatistics(Image<Elem> const& image);
+
+
+template <class T>
+struct MinMax
+{
+    T min;
+    T max;
+};
+
+template <class Elem>
+MinMax<Elem> GetMinMax(Image<Elem> const& image);
 
 
 }} // namespace hsc::fitsthumb

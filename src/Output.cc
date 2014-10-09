@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-#include <string>
+#include <cstring>
 #include <stdexcept>
 
 namespace hsc { namespace fitsthumb {
@@ -16,20 +16,17 @@ Output(
     char           const* szOutType,
     char           const* szFile
 ){
-    std::string sFile = szFile;
-    std::string sType = szOutType;
-
-    if(sType == "bmp"){
-        OutBMP(image, sFile.c_str());
+    if(0 == std::strcmp(szOutType, "bmp")){
+        OutBMP(image, szFile);
     }
-    else if(sType == "jpg"){
-        OutJPG(image, sFile.c_str());
+    else if(0 == std::strcmp(szOutType, "jpg")){
+        OutJPG(image, szFile);
     }
-    else if(sType == "png"){
-        OutPNG(image, sFile.c_str());
+    else if(0 == std::strcmp(szOutType, "png")){
+        OutPNG(image, szFile);
     }
     else{
-        throw std::runtime_error(MSG(sType << ": unsupported format"));
+        throw std::runtime_error(MSG(szOutType << ": unsupported format"));
     }
 }
 

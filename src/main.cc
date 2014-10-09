@@ -7,8 +7,7 @@
 #include "ZScale.h"
 
 // for log scale
-#include "Statistics.h"
-#include "LogScale.h"
+#include "NScale.h"
 #include "sRGBScale.h"
 
 #include <cstdio>
@@ -151,7 +150,7 @@ void createFitsThumb(
         // resize first, then change dynamic range
         dest = ResizeDown<double>(image, width, height);
 
-        // changing dynamic range
+        // change dynamic range
         dest = Apply<double>(ZScale(dest), dest);
     }
 
@@ -222,10 +221,6 @@ void createLogFitsThumb(
     int             height,
     bool            dynamicRangeFirst
 ){
-    double const threshLo = 3;   // dynamic range
-    double const threshHi = 100; //   = mean + [ -theshLo*sigma, +theshHi*sigma ]
-    double const skyLevel = 0.1; // sky level in the output image \in [0, 1]
-
     char const* outputType = PathFindExtension(outputFile);
     if(outputType[0] == char()){
         throw std::runtime_error(
@@ -237,31 +232,11 @@ void createLogFitsThumb(
 
     if(width <= 0 && height <= 0){
         // no resize
-
-        Statistics stat = GetStatistics(image);
-        LogScale scale(
-            // from
-            stat.mean - threshLo * stat.stddev,
-            stat.mean,
-            stat.mean + threshHi * stat.stddev,
-            // to
-            0, skyLevel, 1
-        );
-        dest = Apply<double>(scale, image);
+        dest = Apply<double>(NScale(image), image);
     }
     else if(dynamicRangeFirst){
         // dynamic range change first, then resize
-
-        Statistics stat = GetStatistics(image);
-        LogScale scale(
-            // from
-            stat.mean - threshLo * stat.stddev,
-            stat.mean,
-            stat.mean + threshHi * stat.stddev,
-            // to
-            0, skyLevel, 1
-        );
-        dest = Apply<double>(scale, image);
+        dest = Apply<double>(NScale(image), image);
 
         // do resize
         dest = ResizeDown<double>(dest, width, height);
@@ -270,18 +245,8 @@ void createLogFitsThumb(
         // resize first, then change dynamic range
         dest = ResizeDown<double>(image, width, height);
 
-        Statistics stat = GetStatistics(dest);
-        LogScale scale(
-            // from
-            stat.mean - threshLo * stat.stddev,
-            stat.mean,
-            stat.mean + threshHi * stat.stddev,
-            // to
-            0, skyLevel, 1
-        );
-
-        // changing dynamic range
-        dest = Apply<double>(scale, dest);
+        // change dynamic range
+        dest = Apply<double>(NScale(dest), dest);
     }
 
     // output file

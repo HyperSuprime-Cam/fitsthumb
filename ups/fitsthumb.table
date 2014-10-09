@@ -1,4 +1,4 @@
-setupRequired(afw)
+setupRequired(numpy)
 setupRequired(libjpeg)
 setupRequired(libpng)
 
