@@ -85,7 +85,7 @@ namespace {
 
         std::nth_element(samples.begin(), it2, samples.end());
         std::nth_element(samples.begin(), it1, it2);
-        std::nth_element(it2, it3, samples.end());
+        std::nth_element(it2+1, it3, samples.end());
 
         double const invNormalIQR = 7.4130110925280102e-01;
 
@@ -104,7 +104,7 @@ namespace {
 
         std::nth_element(samples.begin(), it2, samples.end());
         std::nth_element(samples.begin(), it1, it2);
-        std::nth_element(it2, it3, samples.end());
+        std::nth_element(it2+1, it3, samples.end());
 
         stat.mean   = *it2;
         stat.stddev = invNormalIQR * (*it3 - *it1);

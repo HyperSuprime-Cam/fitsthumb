@@ -36,7 +36,6 @@
 #include "Statistics.h"
 #include "LogScale.h"
 
-
 namespace hsc { namespace fitsthumb {
 
 template <class Tfrom>
