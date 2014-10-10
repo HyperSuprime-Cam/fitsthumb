@@ -5,6 +5,6 @@ python/hsc/fitsthumb/version.py
 *.os
 ups/fitsthumb.cfgc
 *.pyc
-test.jpg
-test.png
+test*.jpg
+test*.png
 tests/.tests
