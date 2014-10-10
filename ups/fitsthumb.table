@@ -1,6 +1,7 @@
 setupRequired(numpy)
 setupRequired(libjpeg)
 setupRequired(libpng)
+setupRequired(cfitsio)
 
 if (type == build) {
     setupRequired(sconsUtils)
