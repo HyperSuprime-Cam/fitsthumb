@@ -1,4 +1,6 @@
 setupRequired(numpy)
+setupRequired(swig)
+setupRequired(cfitsio)
 setupRequired(libjpeg)
 setupRequired(libpng)
 

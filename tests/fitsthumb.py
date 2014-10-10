@@ -23,33 +23,28 @@
 #
 
 
-import os, os.path
+import os, os.path, sys
 import unittest
-import random
+import numpy
 
-import lsst.afw.image as afwImage
 import hsc.fitsthumb as fitsthumb
-
-import lsst.utils.tests as utilsTests
-
 
 
 class FitsThumbTest(unittest.TestCase):
     """Test that fitsthumb works"""
     def setUp(self):
-        image = afwImage.ImageF(128, 256)
-        for y in range(image.getHeight()):
-            for x in range(image.getWidth()):
-                image.set(random.gauss(0.0, 1.0))
-        self.image = image
+        self.image = numpy.random.normal(size=(256, 128))
 
     def tearDown(self):
         del self.image
 
     def write(self, format):
         assert format in ("png", "jpg")
-        fitsthumb.createFitsThumb(self.image.getArray(), "test." + format,
-                                  min(self.image.getWidth(), self.image.getHeight(), 500), 0, True)
+        height, width = self.image.shape
+        fitsthumb.createFitsThumb(self.image, "test-linear." + format,
+                                  min(width, height, 500), 0, True)
+        fitsthumb.createLogFitsThumb(self.image, "test-log." + format,
+                                  min(width, height, 500), 0, True)
 
     def testPng(self):
         self.write("png")
@@ -61,17 +56,22 @@ class FitsThumbTest(unittest.TestCase):
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
-    utilsTests.init()
-
     suites = []
     suites += unittest.makeSuite(FitsThumbTest)
-    suites += unittest.makeSuite(utilsTests.MemoryTestCase)
 
     return unittest.TestSuite(suites)
 
 def run(shouldExit=False):
     """Run the tests"""
-    utilsTests.run(suite(), shouldExit)
+    if unittest.TextTestRunner().run(suite()).wasSuccessful():
+        status = 0
+    else:
+        status = 1
+
+    if shouldExit:
+        sys.exit(status)
+    else:
+        return status
 
 if __name__ == "__main__":
     run(True)
