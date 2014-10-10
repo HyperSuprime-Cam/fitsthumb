@@ -246,7 +246,13 @@ ZScale(
     double              contrast = 0.25
 ){
     double z1, z2;
-    _ZScale(image, nSamples, contrast, &z1, &z2);
+    try {
+        _ZScale(image, nSamples, contrast, &z1, &z2);
+    } catch (std::runtime_error const&) {
+        // No good pixels; can choose any scaling we desire
+        z1 = 0.0;
+        z2 = 1.0;
+    }
 
     return LinearScale(
         // from
