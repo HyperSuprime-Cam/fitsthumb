@@ -41,9 +41,7 @@ class FitsThumbTest(unittest.TestCase):
     def write(self, format):
         assert format in ("png", "jpg")
         height, width = self.image.shape
-        fitsthumb.createFitsThumb(self.image, "test-linear." + format,
-                                  min(width, height, 500), 0, True)
-        fitsthumb.createLogFitsThumb(self.image, "test-log." + format,
+        fitsthumb.createFitsThumb(self.image, "test." + format,
                                   min(width, height, 500), 0, True)
 
     def testPng(self):

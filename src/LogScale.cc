@@ -21,6 +21,10 @@ namespace {
         // (b - 1)^(1-s) (b + M)^s = b
         //
 
+        // Integer type that has the same size as double:
+        // This program assumes that if a < b then (intdbl_t&)a < (intdbl_t&)b
+        typedef size_to_type<sizeof(double), true>::type  intdbl_t;
+
         double right = M / (s*(M + 1) - 1);
         double f_right = findAddenda_f(right, s, M);
 
@@ -37,8 +41,8 @@ namespace {
             left = 0.5*(left + 1.0);
         }
 
-        while(1 < reinterpret_cast<int64_t&>(right)
-            - reinterpret_cast<int64_t&>(left)
+        while(1 < reinterpret_cast<intdbl_t&>(right)
+            - reinterpret_cast<intdbl_t&>(left)
         ){
             double middle = 0.5 * (left + right);
             double f_middle = findAddenda_f(middle, s, M);

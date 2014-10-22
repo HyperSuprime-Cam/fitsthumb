@@ -2,6 +2,7 @@
 #define  gc02fb528_12f8_4309_8d29_895d8d2d9b69
 
 #include "hsc/fitsthumb/Image.h"
+#include "hsc/fitsthumb/SizeOption.h"
 #include "Common.h"
 
 #include <algorithm>
@@ -18,7 +19,8 @@ ResizeDown(
     int h_new
 ){
     if(w_new <= 0 && h_new <= 0){
-        throw std::runtime_error("Resize: Target image size is 0");
+        w_new = image.Width();
+        h_new = image.Height();
     }
 
     if(w_new <= 0){
@@ -98,6 +100,32 @@ ResizeDown(
 
     return dest;
 }
+
+
+template <class Tto, class Tfrom>
+Image<Tto>
+ResizeDown(
+    Image<Tfrom> const& image,
+    option::Size const& size
+){
+    if(size.IsRelative()){
+        option::RelativeSize const& rel
+            = static_cast<option::RelativeSize const&>(size);
+
+        int width  = (rel.width  > 0) ?
+            std::max(1, (int)(0.5 + rel.width  * image.Width ())) : 0;
+        int height = (rel.height > 0) ?
+            std::max(1, (int)(0.5 + rel.height * image.Height())) : 0;
+
+        return ResizeDown<Tto>(image, width, height);
+    }
+    else{
+        option::AbsoluteSize const& abs
+            = static_cast<option::AbsoluteSize const&>(size);
+        return ResizeDown<Tto>(image, abs.width, abs.height);
+    }
+}
+
 
 }} // namespace hsc::fitsthumb
 #endif //gc02fb528_12f8_4309_8d29_895d8d2d9b69

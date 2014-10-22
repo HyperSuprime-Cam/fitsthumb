@@ -9,6 +9,7 @@
 // for log scale
 #include "NScale.h"
 #include "sRGBScale.h"
+#include "LabScale.h"
 
 #include <cstdio>
 #include <string>
@@ -86,15 +87,103 @@ namespace {
         return ext;
     }
 
+
+    template <class T>
+    bool IsResizeUnecessary(
+        Image<T>     const& image,
+        option::Size const& size
+    ){
+        if(size.IsRelative()){
+            option::RelativeSize const& rel
+                = static_cast<option::RelativeSize const&>(size);
+
+            return (rel.width <= 0 && rel.height <= 0)
+                || (rel.width == 1 && rel.height == 1)
+                ;
+        }
+        else{
+            option::AbsoluteSize const& abs
+                = static_cast<option::AbsoluteSize const&>(size);
+
+            return (abs.width <= 0 && abs.height <= 0)
+                || (abs.width == (int)image.Width() && abs.height == (int)image.Height())
+                ;
+        }
+    }
+
+
+    template <class T>
+    Image<double>
+    CreateLinearThumbnail(
+        Image<T>            const& image,
+        option::Size        const& size,
+        option::LinearScale const& scale,
+        bool                       dynamicRangeFirst
+    ){
+        if(IsResizeUnecessary(image, size)){
+            // no resize
+            return Apply<double>(ZScale(image, scale), image);
+        }
+        else if(dynamicRangeFirst){
+            // change dynamic range first
+            Image<double> dest = Apply<double>(ZScale(image, scale), image);
+
+            // then resize
+            return ResizeDown<double>(dest, size);
+        }
+        else {
+            // resize first
+            Image<double> dest = ResizeDown<double>(image, size);
+
+            // then change dynamic range
+            return Apply<double>(ZScale(dest, scale), dest);
+        }
+    }
+
+
+    template <class T>
+    Image<double>
+    CreateLogThumbnail(
+        Image<T>            const& image,
+        option::Size        const& size,
+        option::LogScale    const& scale,
+        bool                       dynamicRangeFirst
+    ){
+        Image<double> dest;
+
+        if(IsResizeUnecessary(image, size)){
+            // no resize
+            dest = Apply<double>(NScale(image, scale), image);
+        }
+        else if(dynamicRangeFirst){
+            // change dynamic range first
+            dest = Apply<double>(NScale(image, scale), image);
+
+            // then resize
+            dest = ResizeDown<double>(dest, size);
+        }
+        else {
+            // resize first
+            dest = ResizeDown<double>(image, size);
+
+            // then change dynamic range
+            dest = Apply<double>(NScale(dest, scale), dest);
+        }
+
+        dest = Apply<double>(LabScale(), dest);
+        dest = Apply<double>(sRGBScale(), dest);
+        return dest;
+    }
+
 } // anonymous namespace
 
 
 void createFitsThumb(
-    char const* inputFile ,
-    char const* outputFile,
-    int         width ,
-    int         height,
-    bool        dynamicRangeFirst
+    char          const* inputFile ,
+    char          const* outputFile,
+    option::Size  const& size,
+    option::Scale const& scale,
+    bool                 dynamicRangeFirst
 ){
     std::string output = outputFile;
     if(output == "bmp"
@@ -111,8 +200,8 @@ void createFitsThumb(
     createFitsThumb(
         InFITS<float>(inputFile),
         output.c_str(),
-        width,
-        height,
+        size,
+        scale,
         dynamicRangeFirst
     );
 }
@@ -120,12 +209,15 @@ void createFitsThumb(
 
 template <class T>
 void createFitsThumb(
-    Image<T> const& image,
-    char     const *outputFile,
-    int             width,
-    int             height,
-    bool            dynamicRangeFirst
+    Image<T>      const& image,
+    char          const *outputFile,
+    option::Size  const& size,
+    option::Scale const& scale,
+    bool                 dynamicRangeFirst
 ){
+    //
+    // Get output file type
+    //
     char const* outputType = PathFindExtension(outputFile);
     if(outputType[0] == char()){
         throw std::runtime_error(
@@ -133,126 +225,32 @@ void createFitsThumb(
     }
     ++outputType; // skip '.'
 
+    //
+    // Make thumbnail image
+    //
     Image<double> dest;
-
-    if(width <= 0 && height <= 0){
-        // no resize
-        dest = Apply<double>(ZScale(image), image);
-    }
-    else if(dynamicRangeFirst){
-        // dynamic range change first, then resize
-        dest = Apply<double>(ZScale(image), image);
-
-        // do resize
-        dest = ResizeDown<double>(dest, width, height);
-    }
-    else {
-        // resize first, then change dynamic range
-        dest = ResizeDown<double>(image, width, height);
-
-        // change dynamic range
-        dest = Apply<double>(ZScale(dest), dest);
-    }
-
-    // output file
-    Output(
-        dest,
-        outputType,
-        outputFile
-    );
-}
-
-
-template
-void createFitsThumb(
-    Image<float> const& image,
-    char         const *outputFile,
-    int                 width,
-    int                 height,
-    bool                dynamicRangeFirst
-);
-
-template
-void createFitsThumb(
-    Image<double> const& image,
-    char          const *outputFile,
-    int                  width,
-    int                  height,
-    bool                 dynamicRangeFirst
-);
-
-
-//---------------------------------------------------------//
-
-void createLogFitsThumb(
-    char const* inputFile ,
-    char const* outputFile,
-    int         width ,
-    int         height,
-    bool        dynamicRangeFirst
-){
-    std::string output = outputFile;
-    if(output == "bmp"
-    || output == "png"
-    || output == "jpg"
-    ){
-        // output = basename(inputFile) + "." + output
-        output.insert(output.begin(), '.');
-        output.insert(output.begin(),
-            inputFile, PathFindExtension(inputFile)
+    switch(scale.GetScale()){
+    case option::Scale::Linear:
+        dest = CreateLinearThumbnail(
+            image,
+            size,
+            static_cast<option::LinearScale const&>(scale),
+            dynamicRangeFirst
         );
+        break;
+    case option::Scale::Log:
+        dest = CreateLogThumbnail(
+            image,
+            size,
+            static_cast<option::LogScale const&>(scale),
+            dynamicRangeFirst
+        );
+        break;
     }
 
-    createLogFitsThumb(
-        InFITS<float>(inputFile),
-        output.c_str(),
-        width,
-        height,
-        dynamicRangeFirst
-    );
-}
-
-
-template <class T>
-void createLogFitsThumb(
-    Image<T> const& image,
-    char     const *outputFile,
-    int             width,
-    int             height,
-    bool            dynamicRangeFirst
-){
-    char const* outputType = PathFindExtension(outputFile);
-    if(outputType[0] == char()){
-        throw std::runtime_error(
-            MSG("Cannot infer file type from path extension: " << outputFile));
-    }
-    ++outputType; // skip '.'
-
-    Image<double> dest;
-
-    if(width <= 0 && height <= 0){
-        // no resize
-        dest = Apply<double>(NScale(image), image);
-    }
-    else if(dynamicRangeFirst){
-        // dynamic range change first, then resize
-        dest = Apply<double>(NScale(image), image);
-
-        // do resize
-        dest = ResizeDown<double>(dest, width, height);
-    }
-    else {
-        // resize first, then change dynamic range
-        dest = ResizeDown<double>(image, width, height);
-
-        // change dynamic range
-        dest = Apply<double>(NScale(dest), dest);
-    }
-
-    // output file
-
-    dest = Apply<double>(sRGBScale(), dest);
-
+    //
+    // Output file
+    //
     Output(
         dest,
         outputType,
@@ -262,22 +260,21 @@ void createLogFitsThumb(
 
 
 template
-void createLogFitsThumb(
-    Image<float> const& image,
-    char         const *outputFile,
-    int                 width,
-    int                 height,
-    bool                dynamicRangeFirst
-);
-
-template
-void createLogFitsThumb(
-    Image<double> const& image,
+void createFitsThumb(
+    Image<float>  const& image,
     char          const *outputFile,
-    int                  width,
-    int                  height,
+    option::Size  const& size,
+    option::Scale const& scale,
     bool                 dynamicRangeFirst
 );
 
+template
+void createFitsThumb(
+    Image<double> const& image,
+    char          const *outputFile,
+    option::Size  const& size,
+    option::Scale const& scale,
+    bool                 dynamicRangeFirst
+);
 
 }} // namespace hsc::fitsthumb

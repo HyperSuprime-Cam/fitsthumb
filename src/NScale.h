@@ -35,26 +35,25 @@
 
 #include "Statistics.h"
 #include "LogScale.h"
+#include "hsc/fitsthumb/ScaleOption.h"
 
 namespace hsc { namespace fitsthumb {
 
 template <class Tfrom>
 LogScale
 NScale(
-    Image<Tfrom> const& image,
-    double              threshLo = 3,
-    double              threshHi = 1000,
-    double              skyLevel = 0.1
+    Image<Tfrom>     const& image,
+    option::LogScale const& option
 ){
     Statistics stat = GetStatistics(image);
     if(stat.stddev > 0){
         return LogScale(
             // from
-            stat.mean - threshLo * stat.stddev,
+            stat.mean - option.threshLo * stat.stddev,
             stat.mean,
-            stat.mean + threshHi * stat.stddev,
+            stat.mean + option.threshHi * stat.stddev,
             // to
-            0, skyLevel, 1
+            0, option.skyLevel, 1
         );
     }
 

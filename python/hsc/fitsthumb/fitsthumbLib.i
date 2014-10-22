@@ -11,7 +11,12 @@ Python interface to hsc::fitsthumb
 %{
     #define SWIG_FILE_WITH_INIT
     #include "hsc/fitsthumb.h"
+    #include "hsc/fitsthumb/SizeOption.h"
+    #include "hsc/fitsthumb/ScaleOption.h"
     #include <stdexcept>
+
+    // Because of SWIG's bug, this is necessary
+    using namespace hsc::fitsthumb;
 %}
 
 
@@ -42,9 +47,8 @@ Python interface to hsc::fitsthumb
 %include "Image.i"
 
 %include "hsc/fitsthumb.h"
+%include "hsc/fitsthumb/SizeOption.h"
+%include "hsc/fitsthumb/ScaleOption.h"
 
 %template (createFitsThumb) hsc::fitsthumb::createFitsThumb<float>;
 %template (createFitsThumb) hsc::fitsthumb::createFitsThumb<double>;
-
-%template (createLogFitsThumb) hsc::fitsthumb::createLogFitsThumb<float>;
-%template (createLogFitsThumb) hsc::fitsthumb::createLogFitsThumb<double>;

@@ -2,6 +2,7 @@
 #define  gf540caa5_a6ca_4fba_8625_16cd628369a9
 
 #include "hsc/fitsthumb/Image.h"
+#include "hsc/fitsthumb/ScaleOption.h"
 #include "Common.h"
 #include "LinearScale.h"
 #include <cmath>
@@ -241,13 +242,13 @@ _ZScale(
 template <class Tfrom>
 LinearScale
 ZScale(
-    Image<Tfrom> const& image,
-    int                 nSamples = 1000,
-    double              contrast = 0.25
+    Image<Tfrom>        const& image,
+    option::LinearScale const& option,
+    int                        nSamples = 1000
 ){
     double z1, z2;
     try {
-        _ZScale(image, nSamples, contrast, &z1, &z2);
+        _ZScale(image, nSamples, option.contrast, &z1, &z2);
     } catch (std::runtime_error const&) {
         // No good pixels; can choose any scaling we desire
         z1 = 0.0;
