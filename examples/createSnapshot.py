@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import hsc.fitsthumb as qaFitsthumb
+import hsc.fitsthumb as fitsthumb
 import pyfits
 
 def main():
@@ -11,9 +11,12 @@ def main():
     outfile1 = 'SUPA01047170_1.png'
     xSize = 300
     ySize = 0   # keep aspect ratio
-    dynamicRangeFirst = True
 
-    ret1 = qaFitsthumb.createFitsThumb(infile, outfile1, xSize, ySize, dynamicRangeFirst)
+    fitsthumb.createThumbnail(
+        infile, outfile1,
+        fitsthumb.AbsoluteSize(xSize, ySize),
+        fitsthumb.LinearScale()
+    )
 
     # From numpy array to file
     outfile2 = 'SUPA01047170_2.png'
@@ -22,10 +25,14 @@ def main():
         image.byteswap(True)
         image = image.newbyteorder()
 
-    ret2 = qaFitsthumb.createFitsThumb(image, outfile2, xSize, ySize, dynamicRangeFirst)
+    ratio = 0.4  # resize 40%
+
+    fitsthumb.createThumbnail(
+        image, outfile2,
+        fitsthumb.RelativeSize(ratio),
+        fitsthumb.LogScale()
+    )
 
 
 if __name__ == '__main__':
     main()
-
-

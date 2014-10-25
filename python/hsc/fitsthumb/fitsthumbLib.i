@@ -14,9 +14,6 @@ Python interface to hsc::fitsthumb
     #include "hsc/fitsthumb/SizeOption.h"
     #include "hsc/fitsthumb/ScaleOption.h"
     #include <stdexcept>
-
-    // Because of SWIG's bug, this is necessary
-    using namespace hsc::fitsthumb;
 %}
 
 

@@ -23,32 +23,78 @@
 #
 
 
-import os, os.path, sys
+import os, os.path, sys, math
 import unittest
 import numpy
 
 import hsc.fitsthumb as fitsthumb
 
+g_srcImage = None
+def getSrcImage():
+    global g_srcImage
+    if g_srcImage != None:
+        return g_srcImage
+
+    height  = 500
+    width   = 250
+    density = 1e-2
+
+    nObjects = int(height*width*density)
+
+    g_srcImage = numpy.random.normal(size=(height, width))
+    fluxes = 10 ** (0.4 * numpy.random.exponential(scale = 1.0 / math.log(2), size = (nObjects,)))
+    positions_x = numpy.random.uniform(0, width , size = (nObjects,))
+    positions_y = numpy.random.uniform(0, height, size = (nObjects,))
+
+    for i in xrange(nObjects):
+        xB = max(0, int(positions_x[i])-10)
+        yB = max(0, int(positions_y[i])-10)
+        xE = min(width , int(positions_x[i])+10)
+        yE = min(height, int(positions_y[i])+10)
+
+        x = numpy.arange(xB, xE) - positions_x[i]
+        y = numpy.arange(yB, yE) - positions_y[i]
+        y.shape = (yE-yB,1)
+        g_srcImage[yB:yE, xB:xE] += fluxes[i]*numpy.exp(-(x*x + y*y))
+
+    return g_srcImage
+
 
 class FitsThumbTest(unittest.TestCase):
     """Test that fitsthumb works"""
     def setUp(self):
-        self.image = numpy.random.normal(size=(256, 128))
+        self.image = getSrcImage()
 
     def tearDown(self):
-        del self.image
+        pass
 
-    def write(self, format):
-        assert format in ("png", "jpg")
-        height, width = self.image.shape
-        fitsthumb.createFitsThumb(self.image, "test." + format,
-                                  min(width, height, 500), 0, True)
+    def test_outputJpg(self):
+        fitsthumb.createThumbnail(
+            self.image, "test-outputJpg.jpg",
+            fitsthumb.AbsoluteSize(), fitsthumb.LinearScale()
+        )
+        os.remove("test-outputJpg.jpg");
 
-    def testPng(self):
-        self.write("png")
+    def test_linearScale(self):
+        fitsthumb.createThumbnail(
+            self.image, "test-linearScale.png",
+            fitsthumb.AbsoluteSize(), fitsthumb.LinearScale()
+        )
+        os.remove("test-linearScale.png");
 
-    def testJpg(self):
-        self.write("jpg")
+    def test_logScale(self):
+        fitsthumb.createThumbnail(
+            self.image, "test-logScale.png",
+            fitsthumb.AbsoluteSize(), fitsthumb.LogScale()
+        )
+        os.remove("test-logScale.png");
+
+    def test_relativeSize(self):
+        fitsthumb.createThumbnail(
+            self.image, "test-relativeSize.png",
+            fitsthumb.RelativeSize(0.5), fitsthumb.LogScale()
+        )
+        os.remove("test-relativeSize.png");
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
