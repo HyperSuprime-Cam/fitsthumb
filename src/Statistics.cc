@@ -125,6 +125,14 @@ namespace {
         }
 
         T max = min;
+
+        if(begin == end){
+            MinMax<T> mm;
+            mm.min = NAN;
+            mm.max = NAN;
+            return mm;
+        }
+
         ++begin;
         for(; begin != end; ++begin){
             T value = *begin;

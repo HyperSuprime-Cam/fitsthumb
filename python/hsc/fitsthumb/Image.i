@@ -21,7 +21,11 @@ namespace hsc { namespace fitsthumb {
            fragment="NumPy_Macros")
   hsc::fitsthumb::Image<double> const&
 {
-  $1 = is_array($input) || PySequence_Check($input);
+  $1 = is_array($input) || (
+    PySequence_Check($input)
+    && !PyString_Check($input)
+    && !PyUnicode_Check($input)
+  );
 }
 
 %define %fitsthumb_numpy_typemaps(DATA_TYPE, DATA_TYPECODE)

@@ -89,30 +89,6 @@ namespace {
 
 
     template <class T>
-    bool IsResizeUnecessary(
-        Image<T>     const& image,
-        option::Size const& size
-    ){
-        if(size.IsRelative()){
-            option::RelativeSize const& rel
-                = static_cast<option::RelativeSize const&>(size);
-
-            return (rel.width <= 0 && rel.height <= 0)
-                || (rel.width == 1 && rel.height == 1)
-                ;
-        }
-        else{
-            option::AbsoluteSize const& abs
-                = static_cast<option::AbsoluteSize const&>(size);
-
-            return (abs.width <= 0 && abs.height <= 0)
-                || (abs.width == (int)image.Width() && abs.height == (int)image.Height())
-                ;
-        }
-    }
-
-
-    template <class T>
     Image<double>
     CreateLinearThumbnail(
         Image<T>            const& image,
@@ -120,7 +96,11 @@ namespace {
         option::LinearScale const& scale,
         bool                       dynamicRangeFirst
     ){
-        if(IsResizeUnecessary(image, size)){
+        option::AbsoluteSize absSize
+            = size.ComputeActualSize(image.Width(), image.Height());
+        if(absSize.width  == (int)image.Width()
+        && absSize.height == (int)image.Height()
+        ){
             // no resize
             return Apply<double>(ZScale(image, scale), image);
         }
@@ -129,11 +109,11 @@ namespace {
             Image<double> dest = Apply<double>(ZScale(image, scale), image);
 
             // then resize
-            return ResizeDown<double>(dest, size);
+            return ResizeDown<double>(dest, absSize);
         }
         else {
             // resize first
-            Image<double> dest = ResizeDown<double>(image, size);
+            Image<double> dest = ResizeDown<double>(image, absSize);
 
             // then change dynamic range
             return Apply<double>(ZScale(dest, scale), dest);
@@ -151,7 +131,11 @@ namespace {
     ){
         Image<double> dest;
 
-        if(IsResizeUnecessary(image, size)){
+        option::AbsoluteSize absSize
+            = size.ComputeActualSize(image.Width(), image.Height());
+        if(absSize.width  == (int)image.Width()
+        && absSize.height == (int)image.Height()
+        ){
             // no resize
             dest = Apply<double>(NScale(image, scale), image);
         }
@@ -160,11 +144,11 @@ namespace {
             dest = Apply<double>(NScale(image, scale), image);
 
             // then resize
-            dest = ResizeDown<double>(dest, size);
+            dest = ResizeDown<double>(dest, absSize);
         }
         else {
             // resize first
-            dest = ResizeDown<double>(image, size);
+            dest = ResizeDown<double>(image, absSize);
 
             // then change dynamic range
             dest = Apply<double>(NScale(dest, scale), dest);
@@ -178,7 +162,7 @@ namespace {
 } // anonymous namespace
 
 
-void createFitsThumb(
+void createThumbnail(
     char          const* inputFile ,
     char          const* outputFile,
     option::Size  const& size,
@@ -197,7 +181,7 @@ void createFitsThumb(
         );
     }
 
-    createFitsThumb(
+    createThumbnail(
         InFITS<float>(inputFile),
         output.c_str(),
         size,
@@ -208,7 +192,7 @@ void createFitsThumb(
 
 
 template <class T>
-void createFitsThumb(
+void createThumbnail(
     Image<T>      const& image,
     char          const *outputFile,
     option::Size  const& size,
@@ -260,7 +244,7 @@ void createFitsThumb(
 
 
 template
-void createFitsThumb(
+void createThumbnail(
     Image<float>  const& image,
     char          const *outputFile,
     option::Size  const& size,
@@ -269,7 +253,7 @@ void createFitsThumb(
 );
 
 template
-void createFitsThumb(
+void createThumbnail(
     Image<double> const& image,
     char          const *outputFile,
     option::Size  const& size,

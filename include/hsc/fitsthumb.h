@@ -53,7 +53,7 @@ namespace hsc { namespace fitsthumb {
         function with width = 0 and height = 0 (i.e. no resizing), viewed
         the output with a photo viewer, and pressed "zoom out" button.
 */
-void createFitsThumb(
+void createThumbnail(
     char          const* inputFile ,
     char          const* outputFile,
     option::Size  const& size,
@@ -64,7 +64,7 @@ void createFitsThumb(
 /** Create a thumbnail image from Image<T> (in python, this is numpy array)
 */
 template <class T>
-void createFitsThumb(
+void createThumbnail(
     Image<T>      const& image,
     char          const* outputFile,
     option::Size  const& size,
@@ -87,9 +87,9 @@ void createFitsThumb(
     bool        dynamicRangeFirst = false
 ){
     std::puts(
-        "Warning: Deprecated createFitsThumb() interface."  "\n"
-        "    Replace the calling expression with:"          "\n"
-        "        createFitsThumb("                          "\n"
+        "Warning: createFitsThumb() is deprecated."         "\n"
+        "    Replace it with createThumbnail() as:"         "\n"
+        "        createThumbnail("                          "\n"
         "            inputFile,"                            "\n"
         "            outputFile,"                           "\n"
         "            option::AbsoluteSize(width, height),"  "\n"
@@ -98,7 +98,7 @@ void createFitsThumb(
         "        );"
     );
 
-    createFitsThumb(
+    createThumbnail(
         inputFile,
         outputFile,
         option::AbsoluteSize(width, height),
@@ -118,9 +118,9 @@ void createFitsThumb(
     bool            dynamicRangeFirst = false
 ){
     std::puts(
-        "Warning: Deprecated createFitsThumb() interface."  "\n"
-        "    Replace the calling expression with:"          "\n"
-        "        createFitsThumb("                          "\n"
+        "Warning: createFitsThumb() is deprecated."         "\n"
+        "    Replace it with createThumbnail() as:"         "\n"
+        "        createThumbnail("                          "\n"
         "            image,"                                "\n"
         "            outputFile,"                           "\n"
         "            option::AbsoluteSize(width, height),"  "\n"
@@ -129,7 +129,7 @@ void createFitsThumb(
         "        );"
     );
 
-    createFitsThumb(
+    createThumbnail(
         image,
         outputFile,
         option::AbsoluteSize(width, height),

@@ -18,18 +18,6 @@ ResizeDown(
     int w_new,
     int h_new
 ){
-    if(w_new <= 0 && h_new <= 0){
-        w_new = image.Width();
-        h_new = image.Height();
-    }
-
-    if(w_new <= 0){
-        w_new = std::max(std::size_t(1), h_new * image.Width() / image.Height());
-    }
-    if(h_new <= 0){
-        h_new = std::max(std::size_t(1), w_new * image.Height() / image.Width());
-    }
-
     if(w_new > (int)image.Width() || h_new > (int)image.Height()){
         throw std::runtime_error(MSG
         (   "Resize: Rescaling larger is not supported: ("
@@ -93,7 +81,7 @@ ResizeDown(
         }
     }
 
-    double scale = w_new * h_new / ((double)image.Width() * image.Height());
+    double scale = (double)w_new * h_new / ((double)image.Width() * image.Height());
     for(std::size_t i = 0; i < dest.size(); ++i){
         dest.data()[i] *= scale;
     }
@@ -108,24 +96,11 @@ ResizeDown(
     Image<Tfrom> const& image,
     option::Size const& size
 ){
-    if(size.IsRelative()){
-        option::RelativeSize const& rel
-            = static_cast<option::RelativeSize const&>(size);
+    option::AbsoluteSize abs
+        = size.ComputeActualSize(image.Width(), image.Height());
 
-        int width  = (rel.width  > 0) ?
-            std::max(1, (int)(0.5 + rel.width  * image.Width ())) : 0;
-        int height = (rel.height > 0) ?
-            std::max(1, (int)(0.5 + rel.height * image.Height())) : 0;
-
-        return ResizeDown<Tto>(image, width, height);
-    }
-    else{
-        option::AbsoluteSize const& abs
-            = static_cast<option::AbsoluteSize const&>(size);
-        return ResizeDown<Tto>(image, abs.width, abs.height);
-    }
+    return ResizeDown<Tto>(image, abs.width, abs.height);
 }
-
 
 }} // namespace hsc::fitsthumb
 #endif //gc02fb528_12f8_4309_8d29_895d8d2d9b69
