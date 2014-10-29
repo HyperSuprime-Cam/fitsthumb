@@ -154,8 +154,10 @@ namespace {
             dest = Apply<double>(NScale(dest, scale), dest);
         }
 
-        dest = Apply<double>(LabScale(), dest);
-        dest = Apply<double>(sRGBScale(), dest);
+        // sRGB(Lab(x)) ~ x^1.038 +- 2%
+        // It's no use taking care of this
+        //dest = Apply<double>(LabScale(), dest);
+        //dest = Apply<double>(sRGBScale(), dest);
         return dest;
     }
 
