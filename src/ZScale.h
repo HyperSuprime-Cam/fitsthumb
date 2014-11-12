@@ -14,7 +14,7 @@
 namespace hsc { namespace fitsthumb {
 
 template <class T>
-void _ZSC_Sample(
+void ZSC_Sample_(
     Image<T> const&  image,
     int              nSamples,
     std::vector<T>&  vSample_o
@@ -50,7 +50,7 @@ void _ZSC_Sample(
 
 
 inline double
-_ZSC_ComputeSigma(
+ZSC_ComputeSigma_(
     const std::vector<double>& vFlat,
     const std::vector<int>&    vBadPix,
     int nGoodPix
@@ -81,7 +81,7 @@ _ZSC_ComputeSigma(
 
 
 template <class T>
-void _ZSC_FitLine(
+void ZSC_FitLine_(
     const std::vector<T>& vSample,
     double                krej,
     int                   nGrow,
@@ -143,7 +143,7 @@ void _ZSC_FitLine(
         }
 
         // Threshold of k-sigma clipping
-        double sigma = _ZSC_ComputeSigma(vFlat, vBadPix, nGoodPix);
+        double sigma = ZSC_ComputeSigma_(vFlat, vBadPix, nGoodPix);
         double hcut = sigma * krej;
         double lcut = - hcut;
 
@@ -184,7 +184,7 @@ void _ZSC_FitLine(
 
 template <class T>
 void
-_ZScale(
+ZScale_(
     Image<T> const& image,
     int             nSamples,
     double          contrast,
@@ -198,7 +198,7 @@ _ZScale(
 
     // extract samples
     std::vector<T> vSample;
-    _ZSC_Sample(image, nSamples, vSample);
+    ZSC_Sample_(image, nSamples, vSample);
     int nPix = vSample.size();
 
     if(vSample.empty()){
@@ -220,7 +220,7 @@ _ZScale(
     int nGrow  = std::max(1, nPix / 100);
     int nGoodPix;
     double zstart, zslope;
-    _ZSC_FitLine(
+    ZSC_FitLine_(
         vSample, dKREJ, nGrow, minpix, iITERATIONS,
         &nGoodPix, &zstart, &zslope
     );
@@ -239,29 +239,41 @@ _ZScale(
 }
 
 
-template <class Tfrom>
-LinearScale
-ZScale(
-    Image<Tfrom>        const& image,
-    option::LinearScale const& option,
-    int                        nSamples = 1000
-){
-    double z1, z2;
-    try {
-        _ZScale(image, nSamples, option.contrast, &z1, &z2);
-    } catch (std::runtime_error const&) {
-        // No good pixels; can choose any scaling we desire
-        z1 = 0.0;
-        z2 = 1.0;
-    }
+/** ZScale creator
+    "*Scale" creator classes have:
+    -- typedef ... Scale;
+    -- typedef ... Option;
+    -- static Scale Create(image, option);
+*/
+struct ZScale
+{
+    typedef LinearScale         Scale;
+    typedef option::LinearScale Option;
 
-    return LinearScale(
-        // from
-        z1, z2,
-        // to
-        0, 1
-    );
-}
+    template <class Tfrom>
+    static Scale
+    Create(
+        Image<Tfrom> const& image,
+        Option       const& option,
+        int                 nSamples = 1000
+    ){
+        double z1, z2;
+        try {
+            ZScale_(image, nSamples, option.contrast, &z1, &z2);
+        } catch (std::runtime_error const&) {
+            // No good pixels; can choose any scaling we desire
+            z1 = 0.0;
+            z2 = 1.0;
+        }
+
+        return LinearScale(
+            // from
+            z1, z2,
+            // to
+            0, 1
+        );
+    }
+};
 
 }} // namespace hsc::fitsthumb
 #endif //gf540caa5_a6ca_4fba_8625_16cd628369a9

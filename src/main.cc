@@ -3,13 +3,14 @@
 #include "Output.h"
 #include "Resize.h"
 
+// for minmax scale
+#include "MinmaxScale.h"
+
 // for linear scale
 #include "ZScale.h"
 
 // for log scale
 #include "NScale.h"
-#include "sRGBScale.h"
-#include "LabScale.h"
 
 #include <cstdio>
 #include <string>
@@ -88,77 +89,40 @@ namespace {
     }
 
 
-    template <class T>
+    template <class ScaleCreator, class T>
     Image<double>
-    CreateLinearThumbnail(
-        Image<T>            const& image,
-        option::Size        const& size,
-        option::LinearScale const& scale,
-        bool                       dynamicRangeFirst
+    CreateThumbnail_Impl(
+        Image<T>      const& image,
+        option::Size  const& size,
+        option::Scale const& option,
+        bool                 dynamicRangeFirst
     ){
+        typename ScaleCreator::Option const& castedOption
+            = static_cast<typename ScaleCreator::Option const&>(option);
+
         option::AbsoluteSize absSize
             = size.ComputeActualSize(image.Width(), image.Height());
+
         if(absSize.width  == (int)image.Width()
         && absSize.height == (int)image.Height()
         ){
             // no resize
-            return Apply<double>(ZScale(image, scale), image);
+            return Apply<double>(ScaleCreator::Create(image, castedOption), image);
         }
         else if(dynamicRangeFirst){
             // change dynamic range first
-            Image<double> dest = Apply<double>(ZScale(image, scale), image);
+            Image<double> dest = Apply<double>(ScaleCreator::Create(image, castedOption), image);
 
             // then resize
             return ResizeDown<double>(dest, absSize);
         }
-        else {
+        else{
             // resize first
             Image<double> dest = ResizeDown<double>(image, absSize);
 
             // then change dynamic range
-            return Apply<double>(ZScale(dest, scale), dest);
+            return Apply<double>(ScaleCreator::Create(dest, castedOption), dest);
         }
-    }
-
-
-    template <class T>
-    Image<double>
-    CreateLogThumbnail(
-        Image<T>            const& image,
-        option::Size        const& size,
-        option::LogScale    const& scale,
-        bool                       dynamicRangeFirst
-    ){
-        Image<double> dest;
-
-        option::AbsoluteSize absSize
-            = size.ComputeActualSize(image.Width(), image.Height());
-        if(absSize.width  == (int)image.Width()
-        && absSize.height == (int)image.Height()
-        ){
-            // no resize
-            dest = Apply<double>(NScale(image, scale), image);
-        }
-        else if(dynamicRangeFirst){
-            // change dynamic range first
-            dest = Apply<double>(NScale(image, scale), image);
-
-            // then resize
-            dest = ResizeDown<double>(dest, absSize);
-        }
-        else {
-            // resize first
-            dest = ResizeDown<double>(image, absSize);
-
-            // then change dynamic range
-            dest = Apply<double>(NScale(dest, scale), dest);
-        }
-
-        // sRGB(Lab(x)) ~ x^1.038 +- 2%
-        // It's no use taking care of this
-        //dest = Apply<double>(LabScale(), dest);
-        //dest = Apply<double>(sRGBScale(), dest);
-        return dest;
     }
 
 } // anonymous namespace
@@ -216,20 +180,19 @@ void createThumbnail(
     //
     Image<double> dest;
     switch(scale.GetScale()){
+    case option::Scale::Minmax:
+        dest = CreateThumbnail_Impl<MinmaxScale>(
+            image, size, scale, dynamicRangeFirst
+        );
+        break;
     case option::Scale::Linear:
-        dest = CreateLinearThumbnail(
-            image,
-            size,
-            static_cast<option::LinearScale const&>(scale),
-            dynamicRangeFirst
+        dest = CreateThumbnail_Impl<ZScale>(
+            image, size, scale, dynamicRangeFirst
         );
         break;
     case option::Scale::Log:
-        dest = CreateLogThumbnail(
-            image,
-            size,
-            static_cast<option::LogScale const&>(scale),
-            dynamicRangeFirst
+        dest = CreateThumbnail_Impl<NScale>(
+            image, size, scale, dynamicRangeFirst
         );
         break;
     }
@@ -237,11 +200,7 @@ void createThumbnail(
     //
     // Output file
     //
-    Output(
-        dest,
-        outputType,
-        outputFile
-    );
+    Output(dest, outputType, outputFile);
 }
 
 

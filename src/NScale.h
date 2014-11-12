@@ -39,37 +39,49 @@
 
 namespace hsc { namespace fitsthumb {
 
-template <class Tfrom>
-LogScale
-NScale(
-    Image<Tfrom>     const& image,
-    option::LogScale const& option
-){
-    Statistics stat = GetStatistics(image);
-    if(stat.stddev > 0){
+
+/** NScale creator
+    "*Scale" creator classes have:
+    -- typedef ... Scale;
+    -- typedef ... Option;
+    -- static Scale Create(image, option);
+*/
+struct NScale
+{
+    typedef LogScale         Scale;
+    typedef option::LogScale Option;
+
+
+    template <class Tfrom>
+    static Scale
+    Create(
+        Image<Tfrom> const& image,
+        Option       const& option
+    ){
+        Statistics stat = GetStatistics(image);
+        if(stat.stddev > 0){
+            return LogScale(
+                // from
+                stat.mean - option.threshLo * stat.stddev,
+                stat.mean,
+                stat.mean + option.threshHi * stat.stddev,
+                // to
+                0, option.skyLevel, 1
+            );
+        }
+
+        // on error
+
+        MinMax<Tfrom> minmax = GetMinMax(image);
+
         return LogScale(
             // from
-            stat.mean - option.threshLo * stat.stddev,
-            stat.mean,
-            stat.mean + option.threshHi * stat.stddev,
+            minmax.min, minmax.max,
             // to
-            0, option.skyLevel, 1
+            0, 1
         );
     }
-
-    // on error
-
-    MinMax<Tfrom> minmax = GetMinMax(image);
-
-    return LogScale(
-        // from
-        minmax.min, minmax.max,
-        // to
-        0, 1
-    );
-}
-
-
+};
 
 }} // namespace hsc::fitsthumb
 #endif //gdb323b31_2c86_45f0_a87f_0ca7eb604ca6
