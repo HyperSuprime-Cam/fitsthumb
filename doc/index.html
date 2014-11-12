@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Fitsthumb manual</title>
+    <style>
+        p, pre, li {
+            line-height: 150%;
+        }
+
+        code {
+            text-decoration: underline;
+            text-decoration-style: dotted;
+        }
+
+        pre.display {
+            border: solid #aa4f37; 1pt;
+            background-color: #fddea5;
+            padding: 0.2em;
+        }
+
+        pre.display span.comment {
+            color: #080;
+        }
+
+        pre.example {
+            border: solid #89c3eb; 1pt;
+            background-color: #ebf6f7;
+            padding: 0.2em;
+        }
+
+    </style>
+</head>
+<body>
+<h1>Fitsthumb manual</h1>
+<p><b>Fitsthumb</b> is a tool to make a thumbnail image from a FITS file.</p>
+
+<h2>Python API</h2>
+
+<h3>From a FITS file to a thumbnail</h3>
+
+<pre class="display">
+createThumbnail(
+    inputFile,  <span class="comment"># string</span>
+    outputFile, <span class="comment"># string</span>
+    size,       <span class="comment"># class Size</span>
+    scale,      <span class="comment"># class Scale</span>
+    dynamicRangeFirst = False <span class="comment"># bool</span>
+);
+</pre>
+
+<p>The above function reads a FITS image whose path is <code>inputFile</code>,
+    makes its thumbnail, and save it as <code>outputFile</code>.</p>
+
+<p>The function uses CFITSIO library to read a FITS image.
+    If the FITS file is multi-extension FITS file, and if its primary HDU
+    is empty, you must give in, say, <code>"input.fits[1]"</code> instead of
+    <code>"input.fits"</code> for the argument <code>inputFile</code>.</p>
+
+<p><code>outputFile</code> can be just <code>"bmp"</code>, <code>"png"</code>
+    or <code>"jpg"</code>.
+    In this case, the output file path is inferred from <code>inputFile</code>.
+    Otherwise, <code>outputFile</code> must ends with either <code>".bmp"</code>,
+    <code>".png"</code> or <code>".jpg"</code></p>
+
+<p>For <code>size</code>, see <a href="#class-Size">class Size</a>.
+    For <code>Scale</code>, see <a href="#class-Scale">class Scale</a></p>
+
+<p><code>dynamicRangeFirst</code> controls the order of the thumbnail-making process.
+    The thumbnail-making process includes (1) resizing and (2) dynamic-range determination.
+    In resizing, source pixels in a (large) target pixel are averaged.
+    In dynamic-range determination, pixel values are mapped into [min, max].
+    It is honest that we (1) first average the source pixel values, and then (2) map the average
+    into [min, max].
+    If <code>dynamicRangeFirst</code> is <code>True</code>, however,
+    the source pixel values are (2) first mapped into [min, max],
+    and (1) the mapped values are averaged. The output thumbnail
+    will be dishonest, but it will be the same image as users get when
+    they view a full-size thumbnail shrinked by some viewer program.</p>
+
+<h3>From a numpy array to a thumbnail</h3>
+
+<pre class="display">
+createThumbnail(
+    image,      <span class="comment"># numpy.array</span>
+    outputFile, <span class="comment"># string</span>
+    size,       <span class="comment"># class Size</span>
+    scale,      <span class="comment"># class Scale</span>
+    dynamicRangeFirst = False <span class="comment"># bool</span>
+);
+</pre>
+
+<p>This function is the same the above one, except it takes
+    a two-dimensional <code>numpy.array</code> as the input.</p>
+
+<p><strong>Note</strong>, if you are to load an input image
+    with <code>pyfits</code>, the endianness of the data is often non-native.
+    You have to swap the bytes manually in that case. Thus:</p>
+
+<pre class="example">
+image = pyfits.open("input.fits")[0].data
+if not image.dtype.isnative:
+    image.byteswap(True)
+    image = image.newbyteorder()
+
+hsc.fitsthumb.createThumbnail(
+    image, "output.png",
+    hsc.fitsthumb.RelativeSize(0.3),
+    hsc.fitsthumb.LogScale()
+)
+</pre>
+
+
+<h3><a name="class-Size">class Size</a></h3>
+
+<p><code>class Size</code> represents the size of the output thumbnail.
+    As an argument of a function call,
+    it must be either <code>AbsoluteSize</code> or <code>RelativeSize</code>.</p>
+
+<pre class="display">
+AbsoluteSize(
+)
+AbsoluteSize(
+    width,  <span class="comment"># int</span>
+    height  <span class="comment"># int</span>
+)
+</pre>
+
+<p><code>AbsoluteSize</code> expresses the size of the output thumbnail,
+    in pixels. The size of the thumbnail must be smaller than or equal to
+    the source image.</p>
+
+<p>If <code>width</code> is set <code>0</code>, the width is computed from
+    <code>height</code> so that the aspect ratio is conserved.</p>
+
+<p>If <code>height</code> is set <code>0</code>, the height is computed from
+    <code>width</code> so that the aspect ratio is conserved.</p>
+
+<p>If both <code>width</code> and <code>height</code> are <code>0</code>,
+    the source image is not resized.</p>
+
+<p>If you omit both arguments, both arguments are set <code>0</code>.
+    And the source image is not resized.</p>
+
+<pre class="display">
+RelativeSize(
+)
+RelativeSize(
+    ratio   <span class="comment"># double</span>
+)
+RelativeSize(
+    width,  <span class="comment"># double</span>
+    height  <span class="comment"># double</span>
+)
+</pre>
+
+<p><code>RelativeSize</code> expresses the size of the output thumbnail,
+    relative to the source image. You can give in a single argument
+    <code>ratio</code>. <code>RelativeSize(ratio)</code> is equivalent to
+    <code>RelativeSize(ratio, ratio)</code>.</p>
+
+<p><code>width</code> and <code>height</code> are relative to the source image's
+    width and height respectively. They must be smaller than or equal to <code>1</code>.</p>
+
+<p>If <code>width = 0</code> or <code>height = 0</code>,
+    its value is borrowed from the other. (The aspect ratio is conserved.)</p>
+
+<p>If both <code>width</code> and <code>height</code> are <code>0</code>,
+    the source image is not resized.</p>
+
+<p>If you omit both arguments, both arguments are set <code>0</code>.
+    And the source image is not resized.</p>
+
+<p>Note, in order not to resize the image, you can say either <code>AbsoluteSize()</code>
+    or <code>RelativeSize()</code>. There are no difference between the two.</p>
+
+
+<h3><a name="class-Scale">class Scale</a></h3>
+
+<p><code>class Scale</code> represents a curve that maps pixel values
+    from the source to the thumbnail. It can be one of the following.</p>
+
+<pre class="display">
+MinmaxScale(
+    min = NaN,
+    max = NaN
+)
+</pre>
+
+<p><code>MinmaxScale</code> linearly maps [<code>min</code>, <code>max</code>]
+    to [0, 1].</p>
+
+<p>If <code>min</code> or <code>max</code> is <code>NaN</code>,
+    it is picked out of the source image.</p>
+
+<pre class="display">
+LinearScale(
+    contrast = 0.25
+)
+</pre>
+
+<p><code>LinearScale</code> performs ZScale.</p>
+
+<p>P(x), the cumulative distribution of pixel values, is fit with a
+    straight line. Ideally, I think, the line will be tanglent to P(x)
+    at its inflection point (or, at the maximum point of the
+    (non-cumulative) distribution. The slope of the line is multiplied
+    by <code>contrast</code>. Let x<sub>0</sub> and x<sub>1</sub> the points
+    where the line intersects y = 0 and y = 1 respectively. Then,
+    <code>LinearScale(contrast)</code> is
+    equivalent to <code>MinmaxScale(x<sub>0</sub>, x<sub>1</sub>)</code>.</p>
+
+<pre class="display">
+LogScale(
+    threshLo = 3,
+    threshHi = 100,
+    skyLevel = 0.2
+)
+</pre>
+
+<p>The input pixel values are mapped logarithmically to the output.
+The logarithm curve is defined so that it passes through the three point:
+(input, output) = (&mu; - &theta;<sub>1</sub>&sigma;, 0), (&mu;, S), (&mu; + &theta;<sub>2</sub>&sigma;, 1),
+where &mu; is the average sky, &sigma; is the standard deviation of the sky,
+(&theta;<sub>1</sub>, &theta;<sub>2</sub>, S) are parameters. In the program, they are named
+(<code>threshLo</code>, <code>threshHi</code>, <code>skyLevel</code>) respectively.
+</p>
+
+</body>
+</html>

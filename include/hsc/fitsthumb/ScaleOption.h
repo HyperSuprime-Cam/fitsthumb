@@ -59,7 +59,7 @@ namespace option {
             (input, output) = (mean - T1 sigma, 0), (mean, S), (mean + T2 sigma, 1)
         where mean is the average sky, sigma is the standard deviation of the sky,
         (T1, T2, S) are parameters. In the program, they are named
-        (threshLo, threshHi, skyLevel) respectively,
+        (threshLo, threshHi, skyLevel) respectively.
     */
     struct LogScale : public Scale
     {
